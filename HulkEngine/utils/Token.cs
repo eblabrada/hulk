@@ -13,7 +13,7 @@ public class Token
     this.line = line;
   }
 
-  public string toString()
+  public override string toString()
   {
     return type + " " + lexeme + " " + literal;
   }
