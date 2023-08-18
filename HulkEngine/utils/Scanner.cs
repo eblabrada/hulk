@@ -1,6 +1,6 @@
 public class Scanner
 {
-  private static Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
+  private static readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
   private string src;
   private List<Token> tokens = new List<Token>();
   private int start = 0;
@@ -74,6 +74,9 @@ public class Scanner
       case '*':
         addToken(TokenType.ASTERISK);
         break;
+      case '@':
+        addToken(TokenType.CONCAT);
+        break;
       case '!':
         addToken(isNext('=') ? TokenType.NOT_EQUAL : TokenType.NOT);
         break;
@@ -113,7 +116,7 @@ public class Scanner
         else
         {
           // unexpected character
-          Error.error(ErrorType.LEXICAL);
+          Error.showError(ErrorType.LEXICAL);
         }
         break;
     }
@@ -122,7 +125,7 @@ public class Scanner
   private void identifier()
   {
     while (isAlphaNum(curValue())) advance();
-    
+
     string text = src.Substring(start, current - start);
     TokenType type;
     if (keywords.ContainsKey(text))
@@ -160,7 +163,7 @@ public class Scanner
     if (isAtEnd())
     {
       // unterminated string
-      Error.error(ErrorType.SYNTAX);
+      Error.showError(ErrorType.SYNTAX);
       return;
     }
 

@@ -17,8 +17,9 @@ public class Hulk
   {
     Scanner scanner = new Scanner(src);
     List<Token> tokens = scanner.scanTokens();
-  
-    foreach (var token in tokens) {
+
+    foreach (var token in tokens)
+    {
       Console.WriteLine(token.toString());
     }
   }

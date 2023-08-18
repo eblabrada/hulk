@@ -1,9 +1,9 @@
 public enum TokenType
 {
   // Single-character Tokens
-  LEFT_PARENTESIS, RIGHT_PARENTESIS,
-  LEFT_BRACE, RIGHT_BRACE,
-  ASTERISK, COMMA, MINUS, DOT, PLUS, SEMICOLON, SLASH,
+  LEFT_PARENTESIS, RIGHT_PARENTESIS, LEFT_BRACE, RIGHT_BRACE,
+
+  ASTERISK, COMMA, CONCAT, MINUS, DOT, PLUS, POWER, SEMICOLON, SLASH,
 
   // Comparison Tokens
   NOT, NOT_EQUAL, EQUAL, EQUAL_EQUAL, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
@@ -13,12 +13,16 @@ public enum TokenType
 
   // Keywords
   AND, ELSE, FALSE, FOR, FUNCTION, IF, LET, OR, PRINT, RETURN, TRUE, WHILE,
-  
+
   EOF
 }
 
-public enum ErrorType {
-  
+public enum ErrorType
+{
   LEXICAL, SYNTAX, SEMANTIC
-  
+}
+
+public enum VarType
+{
+  BOOLEAN, NUMBER, STRING
 }
