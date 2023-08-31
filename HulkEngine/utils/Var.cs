@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-public struct Var
+public class Var
 {
   public static readonly Var ZERO = new Var(0);
   public VarType type { get; set; }
@@ -8,6 +8,16 @@ public struct Var
   public double number { get; set; }
   public bool boolean { get; set; }
   public string str { get; set; }
+
+  public Var(Token tk) {
+    if (tk.type == TokenType.NUMBER) {
+      this.type = VarType.NUMBER;
+      this.number = double.Parse(tk.lexeme);
+    } else if (tk.type == TokenType.STRING) {
+      this.type = VarType.STRING;
+      this.str = tk.lexeme;
+    }
+  }
 
   public Var(double number)
   {
