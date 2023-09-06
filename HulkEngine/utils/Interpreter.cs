@@ -17,25 +17,59 @@ public class Interpreter
   {
     return expr();
   }
-  
-  private double factor() {
+
+  private double factor()
+  {
     // factor: NUMBER
     Token token = peek();
-    eat(TokenType.NUMBER, "Expected number");
-    return double.Parse(token.lexeme);
+    if (token.type == TokenType.NUMBER)
+    {
+      eat(TokenType.NUMBER, "Expected number");
+      return double.Parse(token.lexeme);
+    }
+    else if (token.type == TokenType.LEFT_PARENTESIS)
+    {
+      eat(TokenType.LEFT_PARENTESIS, "Expected parentesis");
+      double result = expr();
+      eat(TokenType.RIGHT_PARENTESIS, "Expected parentesis");
+      return result;
+    }
+    throw new Exception();
   }
 
-  private double term() {
-    // term: factor((MUL | DIV) factor)*
-
+  private double term2()
+  {
+    // term2: factor((POWER) factor)*
     double result = factor();
-    while (match(TokenType.MUL, TokenType.DIV)) {
+    while (match(TokenType.POWER))
+    {
       Token op = previous();
       double right = factor();
-      
-      if (op.type == TokenType.MUL) {
+
+      if (op.type == TokenType.POWER)
+      {
+        result = Math.Pow(result, right);
+      }
+    }
+
+    return result;
+  }
+
+  private double term()
+  {
+    // term: term2((MUL | DIV) term2)*
+    double result = term2();
+    while (match(TokenType.MUL, TokenType.DIV))
+    {
+      Token op = previous();
+      double right = term2();
+
+      if (op.type == TokenType.MUL)
+      {
         result = result * right;
-      } else {
+      }
+      else
+      {
         result = result / right;
       }
     }
@@ -43,22 +77,26 @@ public class Interpreter
     return result;
   }
 
-  private double expr() {
+  private double expr()
+  {
     // expr: term((PLUS | MINUS) term)*
     // term: factor((MUL | DIV) factor)*
     // factor: NUMBER
-    
     double result = term();
-    while (match(TokenType.PLUS, TokenType.MINUS)) {
+    while (match(TokenType.PLUS, TokenType.MINUS))
+    {
       Token op = previous();
       double right = term();
-      if (op.type == TokenType.PLUS) {
+      if (op.type == TokenType.PLUS)
+      {
         result = result + right;
-      } else {
+      }
+      else
+      {
         result = result - right;
       }
     }
-  
+
     return result;
   }
 

@@ -69,6 +69,9 @@ public class Scanner
       case '*':
         addToken(TokenType.MUL);
         break;
+      case '^':
+        addToken(TokenType.POWER);
+        break;
       case '@':
         addToken(TokenType.CONCAT);
         break;

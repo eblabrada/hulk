@@ -21,5 +21,4 @@ public static class Error
       report(token.line, $" at '{token.lexeme}'", message);
     }
   }
-
 }
