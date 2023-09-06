@@ -17,11 +17,10 @@ public class Scanner
     keywords.Add("if", TokenType.IF);
     keywords.Add("or", TokenType.OR);
     keywords.Add("print", TokenType.PRINT);
+    keywords.Add("sqrt", TokenType.SQRT);
     keywords.Add("return", TokenType.RETURN);
     keywords.Add("true", TokenType.TRUE);
     keywords.Add("let", TokenType.LET);
-    keywords.Add("in", TokenType.IN);
-    keywords.Add("while", TokenType.WHILE);
   }
 
   public Scanner(string src)

@@ -19,8 +19,11 @@ public class Hulk
     List<Token> tokens = scanner.scanTokens();
 
     Interpreter h = new Interpreter(tokens);
-    Console.WriteLine(h.eval());
+    // Console.WriteLine(h.eval());
 
+    foreach (Token tk in tokens) {
+      Console.WriteLine(tk);
+    }
 
   }
 }
