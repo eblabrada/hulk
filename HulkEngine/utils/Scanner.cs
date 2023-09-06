@@ -20,6 +20,7 @@ public class Scanner
     keywords.Add("return", TokenType.RETURN);
     keywords.Add("true", TokenType.TRUE);
     keywords.Add("let", TokenType.LET);
+    keywords.Add("in", TokenType.IN);
     keywords.Add("while", TokenType.WHILE);
   }
 
@@ -50,12 +51,6 @@ public class Scanner
       case ')':
         addToken(TokenType.RIGHT_PARENTESIS);
         break;
-      case '{':
-        addToken(TokenType.LEFT_BRACE);
-        break;
-      case '}':
-        addToken(TokenType.RIGHT_BRACE);
-        break;
       case ',':
         addToken(TokenType.COMMA);
         break;
@@ -72,7 +67,7 @@ public class Scanner
         addToken(TokenType.SEMICOLON);
         break;
       case '*':
-        addToken(TokenType.ASTERISK);
+        addToken(TokenType.MUL);
         break;
       case '@':
         addToken(TokenType.CONCAT);
@@ -81,7 +76,7 @@ public class Scanner
         addToken(isNext('=') ? TokenType.NOT_EQUAL : TokenType.NOT);
         break;
       case '=':
-        addToken(isNext('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
+        addToken(isNext('=') ? TokenType.EQUAL_EQUAL : isNext('>') ? TokenType.RETURN : TokenType.EQUAL);
         break;
       case '<':
         addToken(isNext('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
@@ -91,7 +86,7 @@ public class Scanner
         break;
       case '/':
         // maybe be comment?
-        addToken(TokenType.SLASH);
+        addToken(TokenType.DIV);
         break;
       case ' ':
       case '\r':
@@ -116,7 +111,7 @@ public class Scanner
         else
         {
           // unexpected character
-          Error.showError(ErrorType.LEXICAL);
+          Error.showError(this.line, "Lexical Error");
         }
         break;
     }
@@ -163,7 +158,7 @@ public class Scanner
     if (isAtEnd())
     {
       // unterminated string
-      Error.showError(ErrorType.SYNTAX);
+      Error.showError(this.line, "Syntax Error");
       return;
     }
 
@@ -228,7 +223,7 @@ public class Scanner
     addToken(type, null);
   }
 
-  private void addToken(TokenType type, Object literal)
+  private void addToken(TokenType type, object literal)
   {
     string text = src.Substring(start, current - start);
     tokens.Add(new Token(type, text, literal, line));
