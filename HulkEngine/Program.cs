@@ -18,8 +18,10 @@ public class Hulk
     Scanner scanner = new Scanner(src);
     List<Token> tokens = scanner.scanTokens();
 
-    Interpreter h = new Interpreter(tokens);
-    // Console.WriteLine(h.eval());
+    Parser parser = new Parser(tokens);
+    Interpreter inter = new Interpreter(parser);
+
+    Console.WriteLine(inter.interpret());
 
     foreach (Token tk in tokens) {
       Console.WriteLine(tk);
