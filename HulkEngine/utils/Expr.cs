@@ -5,6 +5,7 @@ public abstract class Expr
   {
     R visitBinaryExpr(Binary expr);
     R visitNumberExpr(Number expr);
+    R visitUnaryExpr(Unary expr);
   }
 
   public abstract R accept<R>(IVisitor<R> visitor);
@@ -42,6 +43,23 @@ public abstract class Expr
     public override R accept<R>(IVisitor<R> visitor)
     {
       return visitor.visitNumberExpr(this);
+    }
+  }
+
+  public class Unary : Expr
+  {
+    public readonly Token oper;
+    public readonly Expr right;
+
+    public Unary(Token oper, Expr right)
+    {
+      this.oper = oper;
+      this.right = right;
+    }
+
+    public override R accept<R>(IVisitor<R> visitor)
+    {
+      return visitor.visitUnaryExpr(this);
     }
   }
 }

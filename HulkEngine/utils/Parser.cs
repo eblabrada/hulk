@@ -1,6 +1,7 @@
-class Parser {
+class Parser
+{
 
-   private class ParserError : Exception { }
+  private class ParserError : Exception { }
 
   public readonly List<Token> tokens;
   private int current = 0;
@@ -17,8 +18,27 @@ class Parser {
 
   private Expr factor()
   {
-    // factor: NUMBER
+    // factor: (PLUS | MINUS) factor | NUMBER | LPAREN expr RPAREN
     Token token = peek();
+
+    switch (token.type)
+    {
+      case TokenType.PLUS:
+        eat(TokenType.PLUS, "Expected +");
+        return new Expr.Unary(token, factor());
+      case TokenType.MINUS:
+        eat(TokenType.MINUS, "Expected -");
+        return new Expr.Unary(token, factor());
+      case TokenType.NUMBER:
+        eat(TokenType.NUMBER, "Expected number");
+        return new Expr.Number(token);
+      case TokenType.LEFT_PARENTESIS:
+        eat(TokenType.LEFT_PARENTESIS, "Expected parentesis");
+        Expr result = expr();
+        eat(TokenType.RIGHT_PARENTESIS, "Expected parentesis");
+        return result;
+    }
+
     if (token.type == TokenType.NUMBER)
     {
       eat(TokenType.NUMBER, "Expected number");
