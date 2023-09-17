@@ -6,6 +6,9 @@ public abstract class Expr
     R visitBinaryExpr(Binary expr);
     R visitNumberExpr(Number expr);
     R visitUnaryExpr(Unary expr);
+    R visitVariableExpr(Variable expr);
+    R visitAssignExpr(Assign expr);
+    R visitCompoundExpr(Compound expr);
   }
 
   public abstract R accept<R>(IVisitor<R> visitor);
@@ -60,6 +63,53 @@ public abstract class Expr
     public override R accept<R>(IVisitor<R> visitor)
     {
       return visitor.visitUnaryExpr(this);
+    }
+  }
+
+  public class Variable : Expr
+  {
+    public readonly Token name;
+
+    public Variable(Token name)
+    {
+      this.name = name;
+    }
+
+    public override R accept<R>(IVisitor<R> visitor)
+    {
+      return visitor.visitVariableExpr(this);
+    }
+  }
+
+  public class Assign : Expr
+  {
+    public readonly Token name;
+    public readonly Expr value;
+
+    public Assign(Token name, Expr value)
+    {
+      this.name = name;
+      this.value = value;
+    }
+
+    public override R accept<R>(IVisitor<R> visitor)
+    {
+      return visitor.visitAssignExpr(this);
+    }
+  }
+
+  public class Compound : Expr
+  {
+    public readonly Expr child;
+
+    public Compound(Expr child)
+    {
+      this.child = child;
+    }
+
+    public override R accept<R>(IVisitor<R> visitor)
+    {
+      return visitor.visitCompoundExpr(this);
     }
   }
 }

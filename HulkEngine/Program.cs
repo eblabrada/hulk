@@ -21,7 +21,7 @@ public class Hulk
     Parser parser = new Parser(tokens);
     Interpreter inter = new Interpreter(parser);
 
-    Console.WriteLine(inter.interpret());
+    // Console.WriteLine(inter.interpret());
 
     foreach (Token tk in tokens) {
       Console.WriteLine(tk);

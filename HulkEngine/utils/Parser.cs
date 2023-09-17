@@ -1,4 +1,4 @@
-class Parser
+public class Parser
 {
 
   private class ParserError : Exception { }
@@ -37,21 +37,10 @@ class Parser
         Expr result = expr();
         eat(TokenType.RIGHT_PARENTESIS, "Expected parentesis");
         return result;
+      default:
+        eat(TokenType.IDENTIFIER, "Expected identifier");
+        return new Expr.Variable(token);
     }
-
-    if (token.type == TokenType.NUMBER)
-    {
-      eat(TokenType.NUMBER, "Expected number");
-      return new Expr.Number(token);
-    }
-    else if (token.type == TokenType.LEFT_PARENTESIS)
-    {
-      eat(TokenType.LEFT_PARENTESIS, "Expected parentesis");
-      Expr result = expr();
-      eat(TokenType.RIGHT_PARENTESIS, "Expected parentesis");
-      return result;
-    }
-    throw new Exception();
   }
 
   private Expr term2()
