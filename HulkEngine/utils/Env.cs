@@ -3,30 +3,37 @@ public class Env
   public readonly Env enclosing;
   private readonly Dictionary<string, object> values = new Dictionary<string, object>();
 
-  public Env()
-  {
-    this.enclosing = null;
-  }
-
-  public Env(Env enclosing)
+  public Env(Env enclosing = null)
   {
     this.enclosing = enclosing;
   }
 
-  public object get(Token name)
+  public void Define(string name, object value)
   {
-    if (values.ContainsKey(name.lexeme))
+    values[name] = value;
+  }
+
+  public object Get(Token name)
+  {
+    if (values.TryGetValue(name.lexeme, out var value))
     {
-      return values[name.lexeme];
+      return value;
     }
 
     if (enclosing != null)
-      return enclosing.get(name);
+    {
+      return enclosing.Get(name);
+    }
 
-    throw new Exception();
+    throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
   }
 
-  public void assign(Token name, object value)
+  public object GetAt(int distance, string name)
+  {
+    return Ancestor(distance).values[name];
+  }
+
+  public void Assign(Token name, object value)
   {
     if (values.ContainsKey(name.lexeme))
     {
@@ -36,19 +43,19 @@ public class Env
 
     if (enclosing != null)
     {
-      enclosing.assign(name, value);
+      enclosing.Assign(name, value);
       return;
     }
 
-    throw new Exception();
+    throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
   }
 
-  public void declare(string name, object value)
+  public void AssignAt(int distance, Token name, object value)
   {
-    values.Add(name, value);
+    Ancestor(distance).values[name.lexeme] = value;
   }
 
-  public Env ancestor(int distance)
+  public Env Ancestor(int distance)
   {
     Env env = this;
     for (int i = 0; i < distance; i++)
@@ -56,16 +63,6 @@ public class Env
       env = env.enclosing;
     }
     return env;
-  }
-
-  public object getAt(int distance, string name)
-  {
-    return ancestor(distance).values[name];
-  }
-
-  public void assignAt(int distance, Token name, object value)
-  {
-    ancestor(distance).values[name.lexeme] = value;
   }
 
   public override string? ToString()

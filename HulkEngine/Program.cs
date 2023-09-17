@@ -2,30 +2,47 @@
 
 public class Hulk
 {
-  public static void Main()
+  private readonly ConsoleLogger logger = new ConsoleLogger();
+
+  public Hulk() { }
+
+  public static Task Main(string[] args)
+  {
+    return new Hulk().RunPromptAsync();
+  }
+
+  private Task RunPromptAsync()
   {
     while (true)
     {
       Console.Write("> ");
       string line = Console.ReadLine();
-      if (line == null || line == "exit") break;
-      run(line);
+      if (line == null || line == "exit")
+      {
+        break;
+      }
+      RunAsync(line);
+      logger.ResetError();
     }
+    return Task.CompletedTask;
   }
 
-  private static void run(string src)
+  private Task RunAsync(string source)
   {
-    Scanner scanner = new Scanner(src);
-    List<Token> tokens = scanner.scanTokens();
+    var scanner = new Scanner(logger, source);
+    var tokens = scanner.ScanTokens();
 
-    Parser parser = new Parser(tokens);
-    Interpreter inter = new Interpreter(parser);
+    var parser = new Parser(logger, tokens);
+    var statements = parser.Parse();
 
-    // Console.WriteLine(inter.interpret());
+    if (logger.hadError) return Task.CompletedTask;
 
-    foreach (Token tk in tokens) {
-      Console.WriteLine(tk);
+    var astPrinter = new AST();
+    foreach (var statement in statements)
+    {
+      Console.WriteLine(astPrinter.Print(statement));
     }
 
+    return Task.CompletedTask;
   }
 }

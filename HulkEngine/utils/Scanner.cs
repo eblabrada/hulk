@@ -1,94 +1,97 @@
+using static TokenType;
+
 public class Scanner
 {
-  private static readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
-  private string src;
-  private List<Token> tokens = new List<Token>();
+  private static readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>
+  {
+    {"and", AND},
+    {"else", ELSE},
+    {"false", FALSE},
+    {"function", FUNCTION},
+    {"if", IF},
+    {"or", OR},
+    {"print", PRINT},
+    {"return", RETURN},
+    {"true", TRUE},
+    {"let", LET},
+    {"in", IN},
+  };
+
+  public string source { get; }
+  private readonly List<Token> tokens = new List<Token>();
   private int start = 0;
   private int current = 0;
   private int line = 1;
 
-  static void addKeywords()
+  private readonly ILogger logger;
+
+  public Scanner(ILogger logger, string source)
   {
-    keywords.Add("and", TokenType.AND);
-    keywords.Add("else", TokenType.ELSE);
-    keywords.Add("false", TokenType.FALSE);
-    keywords.Add("for", TokenType.FOR);
-    keywords.Add("function", TokenType.FUNCTION);
-    keywords.Add("if", TokenType.IF);
-    keywords.Add("or", TokenType.OR);
-    keywords.Add("print", TokenType.PRINT);
-    keywords.Add("sqrt", TokenType.SQRT);
-    keywords.Add("return", TokenType.RETURN);
-    keywords.Add("true", TokenType.TRUE);
-    keywords.Add("let", TokenType.LET);
+    this.logger = logger;
+    this.source = source;
   }
 
-  public Scanner(string src)
+  public List<Token> ScanTokens()
   {
-    this.src = src;
-  }
-
-  public List<Token> scanTokens()
-  {
-    while (!isAtEnd())
+    while (!IsAtEnd())
     {
       start = current;
-      scanToken();
+      ScanToken();
     }
-    tokens.Add(new Token(TokenType.EOF, "", null, line));
+    tokens.Add(new Token(EOF, "", null, line));
     return tokens;
   }
 
-  private void scanToken()
+  private void ScanToken()
   {
-    char c = advance();
+    char c = Advance();
     switch (c)
     {
       case '(':
-        addToken(TokenType.LEFT_PARENTESIS);
+        AddToken(LEFT_PARENTESIS);
         break;
       case ')':
-        addToken(TokenType.RIGHT_PARENTESIS);
+        AddToken(RIGHT_PARENTESIS);
         break;
       case ',':
-        addToken(TokenType.COMMA);
+        AddToken(COMMA);
         break;
       case '.':
-        addToken(TokenType.DOT);
+        AddToken(DOT);
         break;
       case '-':
-        addToken(TokenType.MINUS);
+        AddToken(MINUS);
         break;
       case '+':
-        addToken(TokenType.PLUS);
+        AddToken(PLUS);
         break;
       case ';':
-        addToken(TokenType.SEMICOLON);
+        AddToken(SEMICOLON);
         break;
       case '*':
-        addToken(TokenType.MUL);
+        AddToken(MUL);
         break;
       case '^':
-        addToken(TokenType.POWER);
+        AddToken(POWER);
         break;
       case '@':
-        addToken(TokenType.CONCAT);
+        AddToken(CONCAT);
         break;
       case '!':
-        addToken(isNext('=') ? TokenType.NOT_EQUAL : TokenType.NOT);
+        AddToken(IsNext('=') ? NOT_EQUAL : NOT);
         break;
       case '=':
-        addToken(isNext('=') ? TokenType.EQUAL_EQUAL : isNext('>') ? TokenType.RETURN : TokenType.EQUAL);
+        AddToken(IsNext('=') ? EQUAL_EQUAL : IsNext('>') ? IMPLIES : EQUAL);
         break;
       case '<':
-        addToken(isNext('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
+        AddToken(IsNext('=') ? LESS_EQUAL : LESS);
         break;
       case '>':
-        addToken(isNext('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+        AddToken(IsNext('=') ? GREATER_EQUAL : GREATER);
         break;
       case '/':
         // maybe be comment?
-        addToken(TokenType.DIV);
+        AddToken(DIV);
         break;
       case ' ':
       case '\r':
@@ -99,31 +102,31 @@ public class Scanner
         line++;
         break;
       case '"':
-        str();
+        ScanString();
         break;
       default:
         if (IsDigit(c))
         {
-          number();
+          ScanNumber();
         }
-        else if (isAlpha(c))
+        else if (IsAlpha(c))
         {
-          identifier();
+          ScanIdentifier();
         }
         else
         {
           // unexpected character
-          Error.showError(this.line, "Lexical Error");
+          logger.Error(this.line, "Unexpected character.");
         }
         break;
     }
   }
 
-  private void identifier()
+  private void ScanIdentifier()
   {
-    while (isAlphaNum(curValue())) advance();
+    while (IsAlphaNum(Peek())) Advance();
 
-    string text = src.Substring(start, current - start);
+    string text = source.Substring(start, current - start);
     TokenType type;
     if (keywords.ContainsKey(text))
     {
@@ -131,49 +134,51 @@ public class Scanner
     }
     else
     {
-      type = TokenType.IDENTIFIER;
+      type = IDENTIFIER;
     }
-    addToken(type);
+    AddToken(type);
   }
 
-  private void number()
+  private void ScanNumber()
   {
-    while (IsDigit(curValue())) advance();
+    while (IsDigit(Peek())) Advance();
 
-    if (curValue() == '.' && IsDigit(nextValue()))
-    { // float number
-      advance();
-      while (IsDigit(curValue())) advance();
+    if (Peek() == '.' && IsDigit(Next()))
+    { // float ScanNumber
+      Advance();
+      while (IsDigit(Peek())) Advance();
     }
 
-    addToken(TokenType.NUMBER, double.Parse(src.Substring(start, current - start)));
+    AddToken(NUMBER, double.Parse(source.Substring(start, current - start)));
   }
 
-  private void str()
+  private void ScanString()
   {
-    while (curValue() != '"' && !isAtEnd())
+    while (Peek() != '"' && !IsAtEnd())
     {
-      if (curValue() == '\n') line++;
-      advance();
+      if (Peek() == '\n') line++;
+      Advance();
     }
 
-    if (isAtEnd())
+    // unterminated string
+    if (IsAtEnd())
     {
-      // unterminated string
-      Error.showError(this.line, "Syntax Error");
+      logger.Error(this.line, "Unterminated string.");
       return;
     }
 
-    advance();
+    // closing "
+    Advance();
 
-    string value = src.Substring(start + 1, (current - 1) - (start + 1));
-    addToken(TokenType.STRING, value);
+    // trim the surrounding quotes
+    string value = source.Substring(start + 1, (current - 1) - (start + 1));
+    AddToken(STRING, value);
   }
 
-  private bool isNext(char expected)
+  private bool IsNext(char expected)
   {
-    if (isAtEnd()) return false;
-    if (src[current] == expected)
+    if (IsAtEnd()) return false;
+    if (source[current] == expected)
     {
       current++;
       return true;
@@ -181,19 +186,19 @@ public class Scanner
     return false;
   }
 
-  private char curValue()
+  private char Peek()
   {
-    if (isAtEnd()) return '\0';
-    return src[current];
+    if (IsAtEnd()) return '\0';
+    return source[current];
   }
 
-  private char nextValue()
+  private char Next()
   {
-    if (current + 1 >= src.Count()) return '\0';
-    return src[current + 1];
+    if (current + 1 >= source.Count()) return '\0';
+    return source[current + 1];
   }
 
-  private bool isAlpha(char c)
+  private bool IsAlpha(char c)
   {
     return ('a' <= c && c <= 'z') ||
            ('A' <= c && c <= 'Z') ||
@@ -205,29 +210,29 @@ public class Scanner
     return '0' <= c && c <= '9';
   }
 
-  private bool isAlphaNum(char c)
+  private bool IsAlphaNum(char c)
   {
-    return isAlpha(c) || IsDigit(c);
+    return IsAlpha(c) || IsDigit(c);
   }
 
-  private bool isAtEnd()
+  private bool IsAtEnd()
   {
-    return current >= src.Count();
+    return current >= source.Count();
   }
 
-  private char advance()
+  private char Advance()
   {
-    return src[current++];
+    return source[current++];
   }
 
-  private void addToken(TokenType type)
+  private void AddToken(TokenType type)
   {
-    addToken(type, null);
+    AddToken(type, null);
   }
 
-  private void addToken(TokenType type, object literal)
+  private void AddToken(TokenType type, object literal)
   {
-    string text = src.Substring(start, current - start);
+    string text = source.Substring(start, current - start);
     tokens.Add(new Token(type, text, literal, line));
   }
 }

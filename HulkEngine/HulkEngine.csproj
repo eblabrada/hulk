@@ -5,6 +5,6 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>S2699,CS8600,CS8625,CS8625</NoWarn>
+    <NoWarn>S2699,CS8600,CS8625,CS8625,CS8604,CS8603</NoWarn>
   </PropertyGroup>
 </Project>
