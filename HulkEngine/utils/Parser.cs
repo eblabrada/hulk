@@ -4,7 +4,6 @@ using static TokenType;
 
 public class Parser
 {
-
   private class ParserError : Exception { }
 
   private int current = 0;
@@ -18,172 +17,120 @@ public class Parser
     this.tokens = tokens;
   }
 
-  public List<Stmt> Parse()
-  {
-    var statements = new List<Stmt>();
-    while (!IsAtEnd())
-    {
-      statements.Add(Declaration());
-    }
-    return statements;
-  }
-
-  private Stmt Declaration()
+  public Expr Parse()
   {
     try
     {
-      if (Match(FUNCTION)) return Function("function");
-      if (Match(LET)) return VarDeclaration();
+      Expr result = HulkExpr();
 
-      return Statement();
+      if (Match(SEMICOLON))
+      {
+        if (!IsAtEnd()) Error(Peek(), "Expected ';' at end of line...");
+        return result;
+      }
+
+      Error(Peek(), "Invalid expression.");
+      return null;
     }
-    catch (ParserError)
+    catch
     {
-      Sync();
+      Error(Peek(), "Unreachable code.");
       return null;
     }
   }
 
-  private Stmt.Function Function(string kind)
+  private Expr HulkExpr()
   {
-    var name = Eat(IDENTIFIER, $"Expected {kind} name.");
-    Eat(LEFT_PARENTESIS, $"Expected '(' after {kind} name.");
-
-    var parameters = new List<Token>();
-    if (!Check(RIGHT_PARENTESIS))
+    if (Match(FUNCTION))
     {
-      do
+      var name = Eat(IDENTIFIER, "Expected function name.");
+      Eat(LEFT_PARENTESIS, "Expected '(' after function name.");
+
+      var parameters = new List<Token>();
+      if (!Check(RIGHT_PARENTESIS))
       {
-        if (parameters.Count >= 10)
+        do
         {
-          Error(Peek(), "Cannot have more than 10 parameters.");
-        }
+          if (parameters.Count >= 10)
+          {
+            Error(Peek(), "Cannot have more than 10 parameters.");
+          }
 
-        parameters.Add(Eat(IDENTIFIER, "Expected parameter name."));
-      } while (Match(COMMA));
-    }
-
-    Eat(RIGHT_PARENTESIS, "Expected ')' after parameters.");
-    Eat(IMPLIES, $"Expected '=>' symbol before body of {kind}.");
-
-    var body = InlineFunctionBody();
-
-    return new Stmt.Function(name, parameters, body);
-  }
-
-  private List<Stmt> InlineFunctionBody()
-  {
-    var statements = new List<Stmt>();
-    while (!Check(SEMICOLON) && !IsAtEnd())
-    {
-      statements.Add(Declaration());
-    }
-
-    Eat(SEMICOLON, "Expected ';' after inline function body.");
-    return statements;
-  }
-
-  private Stmt VarDeclaration()
-  {
-    var name = Eat(IDENTIFIER, "Expected variable name.");
-
-    Expr initializer = null;
-    if (Match(EQUAL))
-    {
-      initializer = Expression();
-    }
-
-    Eat(IN, "Expected 'in' after variable declaration.");
-    return new Stmt.Var(name, initializer);
-  }
-
-  private Stmt Statement()
-  {
-    if (Match(IF)) return IfStatement();
-    if (Match(PRINT)) return PrintStatement();
-    if (Match(RETURN)) return ReturnStatement();
-    return ExpressionStatement();
-  }
-
-  private Stmt IfStatement()
-  {
-    Eat(LEFT_PARENTESIS, "Expected '(' after 'if'.");
-    var condition = Expression();
-    Eat(RIGHT_PARENTESIS, "Expected ')' after if condition.");
-
-    var thenBranch = Statement();
-    var elseBranch = default(Stmt);
-
-    if (Match(ELSE))
-    {
-      elseBranch = Statement();
-    }
-
-    return new Stmt.If(condition, thenBranch, elseBranch);
-  }
-
-  private Stmt PrintStatement()
-  {
-    var value = Expression();
-    if (Check(SEMICOLON))
-    {
-      Eat(SEMICOLON, "");
-      if (!IsAtEnd())
-      {
-        Error(Peek(), "Expected EOF after ';'.");
+          parameters.Add(Eat(IDENTIFIER, "Expected parameter name."));
+        } while (Match(COMMA));
       }
+
+      Eat(RIGHT_PARENTESIS, "Expected ')' after parameters.");
+      Eat(IMPLIES, "Expected '=>' symbol before body of function.");
+
+      var body = Expression();
+
+      return new Expr.Function(name, parameters, body);
     }
-    return new Stmt.Print(value);
+
+    return Expression();
   }
 
-  private Stmt ReturnStatement()
+  private Expr VarDeclaration()
   {
-    var keyword = Previous();
-    Expr value = null;
-    if (!Check(SEMICOLON))
+    if (Match(LET))
     {
-      value = Expression();
+      var assignments = Variables();
+
+      Eat(IN, "Expected 'in' at end of 'let-in' statement.");
+
+      Expr into = Expression();
+      return new Expr.LetIn(assignments, into);
     }
 
-    Eat(SEMICOLON, "Expected ';' after return value.");
-    return new Stmt.Return(keyword, value);
+    return IfStatement();
   }
 
-  private Stmt ExpressionStatement()
+  private List<Expr.Assign> Variables()
   {
-    var expr = Expression();
-    // Eat(SEMICOLON, "Expected ';' after expression.");
-    return new Stmt.Expression(expr);
+    var assignments = new List<Expr.Assign>();
+
+    do
+    {
+      if (!Match(IDENTIFIER))
+      {
+        Error(Peek(), "Assignment expected.");
+      }
+
+      Token name = Previous();
+      Eat(EQUAL, "Expected '=' after variable name.");
+      Expr value = Expression();
+      assignments.Add(new Expr.Assign(name, value));
+    } while (Match(COMMA));
+
+    return assignments;
+  }
+
+  private Expr IfStatement()
+  {
+    if (Match(IF))
+    {
+      Eat(LEFT_PARENTESIS, "Expected '(' after 'if'.");
+      var condition = Expression();
+      Eat(RIGHT_PARENTESIS, "Expected ')' after if condition.");
+
+      var thenBranch = Expression();
+      var elseBranch = default(Expr);
+
+      if (Match(ELSE))
+      {
+        elseBranch = Expression();
+      }
+
+      return new Expr.Conditional(condition, thenBranch, elseBranch);
+    }
+
+    return Or();
   }
 
   private Expr Expression()
   {
-    return Assignment();
-  }
-
-  private Expr Assignment()
-  {
-    var expr = Or();
-
-    if (Match(EQUAL))
-    {
-      var equals = Previous();
-      var value = Assignment();
-
-      if (expr is Expr.Variable variableExpr)
-      {
-        var name = variableExpr.name;
-        return new Expr.Assign(name, value);
-      }
-      else if (expr is Expr.Get getExpr)
-      {
-        return new Expr.Set(getExpr.obj, getExpr.name, value);
-      }
-
-      Error(equals, "Invalid assignment target.");
-    }
-
-    return expr;
+    return VarDeclaration();
   }
 
   private Expr Or()
@@ -194,7 +141,7 @@ public class Parser
     {
       var op = Previous();
       var right = And();
-      expr = new Expr.Logical(expr, op, right);
+      expr = new Expr.Binary(expr, op, right);
     }
 
     return expr;
@@ -208,7 +155,7 @@ public class Parser
     {
       var op = Previous();
       var right = Equality();
-      expr = new Expr.Logical(expr, op, right);
+      expr = new Expr.Binary(expr, op, right);
     }
 
     return expr;
@@ -262,71 +209,72 @@ public class Parser
       return new Expr.Unary(op, right);
     }
 
+    return Grouping();
+  }
+
+  private Expr Grouping()
+  {
+    if (Match(LEFT_PARENTESIS))
+    {
+      Expr expr = Expression();
+      Eat(RIGHT_PARENTESIS, "Expected ')' after expression.");
+      return expr;
+    }
     return Call();
   }
 
   private Expr Call()
   {
-    var expr = Primary();
-
-    while (true)
+    if (Check(IDENTIFIER) && CheckNext(LEFT_PARENTESIS))
     {
-      if (Match(LEFT_PARENTESIS))
-      {
-        expr = FinishCall(expr);
-      }
-      else
-      {
-        break;
-      }
+      Token name = Advance();
+      Eat(LEFT_PARENTESIS, "Expected '(' after identifier.");
+      List<Expr> parameters = Parameters();
+      Eat(RIGHT_PARENTESIS, "Expected ')' after parameters.");
+      return new Expr.Call(name, parameters);
     }
-
-    return expr;
+    return Literal();
   }
 
-  private Expr FinishCall(Expr calle)
+  private List<Expr> Parameters()
   {
-    var arguments = new List<Expr>();
+    var parameters = new List<Expr>();
+
     if (!Check(RIGHT_PARENTESIS))
     {
       do
       {
-        if (arguments.Count >= 10)
-        {
-          Error(Peek(), "Cannot have more than 10 arguments.");
-        }
-        arguments.Add(Expression());
+        parameters.Add(Expression());
       } while (Match(COMMA));
     }
 
-    var paren = Eat(RIGHT_PARENTESIS, "Expected ')' after arguments.");
-
-    return new Expr.Call(calle, paren, arguments);
+    return parameters;
   }
 
-  private Expr Primary()
+  private Expr Literal()
   {
-    if (Match(FALSE)) return new Expr.Literal(false);
-    if (Match(TRUE)) return new Expr.Literal(true);
-
-    if (Match(NUMBER, STRING))
+    switch (Peek().type)
     {
-      return new Expr.Literal(Previous().literal);
+      case STRING:
+      case NUMBER:
+        return new Expr.Literal(Advance().literal);
+      case TRUE:
+        Advance();
+        return new Expr.Literal(true);
+      case FALSE:
+        Advance();
+        return new Expr.Literal(false);
+      case PI:
+        Advance();
+        return new Expr.Literal(Math.PI);
+      case TokenType.EULER:
+        Advance();
+        return new Expr.Literal(Math.E);
+      case TokenType.IDENTIFIER:
+        return new Expr.Variable(Advance());
+      default:
+        throw Error(Peek(), "Expected expression 'literal'.");
     }
-
-    if (Match(IDENTIFIER))
-    {
-      return new Expr.Variable(Previous());
-    }
-
-    if (Match(LEFT_PARENTESIS))
-    {
-      var expr = Expression();
-      Eat(RIGHT_PARENTESIS, "Expected ')' after expression.");
-      return new Expr.Grouping(expr);
-    }
-
-    throw Error(Peek(), "Expected expression.");
   }
 
   private bool Match(params TokenType[] types)
@@ -354,6 +302,12 @@ public class Parser
     return Peek().type == type;
   }
 
+  private bool CheckNext(TokenType type)
+  {
+    if (IsAtEnd()) return false;
+    return PeekNext().type == type;
+  }
+
   private Token Advance()
   {
     if (!IsAtEnd()) current++;
@@ -370,6 +324,11 @@ public class Parser
     return tokens[current];
   }
 
+  private Token PeekNext()
+  {
+    return tokens[current + 1];
+  }
+
   private Token Previous()
   {
     return tokens[current - 1];
@@ -379,27 +338,5 @@ public class Parser
   {
     logger.Error(token, message);
     return new ParserError();
-  }
-
-  private void Sync()
-  {
-    Advance();
-
-    while (!IsAtEnd())
-    {
-      if (Previous().type == SEMICOLON) return;
-
-      switch (Peek().type)
-      {
-        case FUNCTION:
-        case LET:
-        case IF:
-        case PRINT:
-        case RETURN:
-          return;
-      }
-    }
-
-    Advance();
   }
 }

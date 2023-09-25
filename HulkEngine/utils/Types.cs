@@ -3,7 +3,8 @@ public enum TokenType
   // Single-character Tokens
   LEFT_PARENTESIS, RIGHT_PARENTESIS,
 
-  MUL, COMMA, CONCAT, MINUS, DOT, PLUS, POWER, SEMICOLON, DIV,
+  // Operators
+  MUL, COMMA, CONCAT, MINUS, DOT, PLUS, POWER, SEMICOLON, DIV, MOD,
 
   // Comparison Tokens
   NOT, NOT_EQUAL, EQUAL, EQUAL_EQUAL, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, IMPLIES,
@@ -13,6 +14,9 @@ public enum TokenType
 
   // Keywords
   AND, ELSE, FALSE, FOR, FUNCTION, IF, LET, IN, OR, PRINT, RETURN, TRUE, WHILE,
+
+  // Constants
+  EULER, PI,
 
   EOF
 }

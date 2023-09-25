@@ -6,11 +6,10 @@ public abstract class Expr
     R VisitAssignExpr(Assign expr);
     R VisitBinaryExpr(Binary expr);
     R VisitCallExpr(Call expr);
-    R VisitGetExpr(Get expr);
-    R VisitGroupingExpr(Grouping expr);
+    R VisitConditionalExpr(Conditional expr);
+    R VisitFunctionExpr(Function expr);
+    R VisitLetInExpr(LetIn expr);
     R VisitLiteralExpr(Literal expr);
-    R VisitLogicalExpr(Logical expr);
-    R VisitSetExpr(Set expr); 
     R VisitUnaryExpr(Unary expr);
     R VisitVariableExpr(Variable expr);
   }
@@ -53,51 +52,81 @@ public abstract class Expr
     }
   }
 
-  public class Call : Expr {
-    public readonly Expr calle;
-    public readonly Token paren;
-    public readonly List<Expr> arguments;
+  public class Call : Expr
+  {
+    public readonly Token name;
+    public readonly List<Expr> parameters;
 
-    public Call(Expr calle, Token paren, List<Expr> arguments) {
-      this.calle = calle;
-      this.paren = paren;
-      this.arguments = arguments;
+    public Call(Token name, List<Expr> parameters)
+    {
+      this.name = name;
+      this.parameters = parameters;
     }
 
-    public override R Accept<R>(IVisitor<R> visitor) {
+    public int Arity => parameters.Count;
+
+    public override R Accept<R>(IVisitor<R> visitor)
+    {
       return visitor.VisitCallExpr(this);
     }
   }
 
-  public class Get : Expr
+  public class Conditional : Expr
   {
-    public readonly Expr obj;
-    public readonly Token name;
+    public readonly Expr condition;
+    public readonly Expr thenBranch;
+    public readonly Expr elseBranch;
 
-    public Get(Expr obj, Token name)
+    public Conditional(Expr condition, Expr thenBranch, Expr elseBranch)
     {
-      this.obj = obj;
-      this.name = name;
+      this.condition = condition;
+      this.thenBranch = thenBranch;
+      this.elseBranch = elseBranch;
     }
 
     public override R Accept<R>(IVisitor<R> visitor)
     {
-      return visitor.VisitGetExpr(this);
+      return visitor.VisitConditionalExpr(this);
     }
   }
 
-  public class Grouping : Expr
+  public class Function : Expr
   {
-    public readonly Expr expression;
+    public readonly Token name;
+    public readonly Expr body;
+    public readonly List<Token> parameters;
+    public readonly bool overwritable;
 
-    public Grouping(Expr expression)
+    public Function(Token name, List<Token> parameters, Expr body, bool overwritable = false)
     {
-      this.expression = expression;
+      this.name = name;
+      this.parameters = parameters;
+      this.body = body;
+      this.overwritable = overwritable;
+    }
+
+    public int Arity => parameters.Count;
+
+    public override R Accept<R>(IVisitor<R> visitor)
+    {
+      return visitor.VisitFunctionExpr(this);
+    }
+  }
+
+  public class LetIn : Expr
+  {
+    public readonly List<Assign> assignments;
+    public readonly Expr into;
+
+    public LetIn(List<Assign> assignments, Expr into)
+    {
+      this.assignments = assignments;
+      this.into = into;
     }
 
     public override R Accept<R>(IVisitor<R> visitor)
     {
-      return visitor.VisitGroupingExpr(this);
+      return visitor.VisitLetInExpr(this);
     }
   }
 
@@ -112,44 +141,6 @@ public abstract class Expr
     public override R Accept<R>(IVisitor<R> visitor)
     {
       return visitor.VisitLiteralExpr(this);
-    }
-  }
-
-  public class Logical : Expr
-  {
-    public readonly Expr left;
-    public readonly Token oper;
-    public readonly Expr right;
-
-    public Logical(Expr left, Token oper, Expr right)
-    {
-      this.left = left;
-      this.oper = oper;
-      this.right = right;
-    }
-
-    public override R Accept<R>(IVisitor<R> visitor)
-    {
-      return visitor.VisitLogicalExpr(this);
-    }
-  }
-
-  public class Set : Expr
-  {
-    public readonly Expr obj;
-    public readonly Token name;
-    public readonly Expr value;
-
-    public Set(Expr obj, Token name, Expr value)
-    {
-      this.obj = obj;
-      this.name = name;
-      this.value = value;
-    }
-
-    public override R Accept<R>(IVisitor<R> visitor)
-    {
-      return visitor.VisitSetExpr(this);
     }
   }
 

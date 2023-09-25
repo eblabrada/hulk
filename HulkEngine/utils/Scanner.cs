@@ -4,17 +4,15 @@ public class Scanner
 {
   private static readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>
   {
-    {"and", AND},
+    {"E", EULER},
     {"else", ELSE},
     {"false", FALSE},
     {"function", FUNCTION},
     {"if", IF},
-    {"or", OR},
-    {"print", PRINT},
-    {"return", RETURN},
-    {"true", TRUE},
-    {"let", LET},
     {"in", IN},
+    {"let", LET},
+    {"PI", PI},
+    {"true", TRUE},
   };
 
   public string source { get; }
@@ -56,9 +54,6 @@ public class Scanner
       case ',':
         AddToken(COMMA);
         break;
-      case '.':
-        AddToken(DOT);
-        break;
       case '-':
         AddToken(MINUS);
         break;
@@ -76,6 +71,15 @@ public class Scanner
         break;
       case '@':
         AddToken(CONCAT);
+        break;
+      case '%':
+        AddToken(MOD);
+        break;
+      case '&':
+        AddToken(AND);
+        break;
+      case '|':
+        AddToken(OR);
         break;
       case '!':
         AddToken(IsNext('=') ? NOT_EQUAL : NOT);
@@ -171,7 +175,10 @@ public class Scanner
     Advance();
 
     // trim the surrounding quotes
-    string value = source.Substring(start + 1, (current - 1) - (start + 1));
+    string value = source.Substring(start + 1, current - start - 2);
+
+    value = value.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\\"", "\"");
+
     AddToken(STRING, value);
   }
 
