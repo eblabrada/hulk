@@ -1,78 +1,136 @@
 public class Env
 {
-  public readonly Env enclosing;
-  private readonly Dictionary<string, object> values = new Dictionary<string, object>();
+  private Dictionary<string, List<object>> varGlobal;
+  private Dictionary<string, Dictionary<int, Expr.Function>> funGlobal;
 
-  public Env(Env enclosing = null)
+  private HashSet<(string, int)> builtins = new HashSet<(string, int)>()
   {
-    this.enclosing = enclosing;
-  }
+    ("rand", 0),
+    ("cos", 1),
+    ("exp", 1),
+    ("print", 1),
+    ("sin", 1),
+    ("sqrt", 1),
+    ("log", 2)
+  };
 
-  public void Define(string name, object value)
+  public Env()
   {
-    values[name] = value;
+    this.varGlobal = new Dictionary<string, List<object>>();
+    this.funGlobal = new Dictionary<string, Dictionary<int, Expr.Function>>();
   }
 
   public object Get(Token name)
   {
-    if (values.TryGetValue(name.lexeme, out var value))
+    try
     {
-      return value;
+      if (IsFunction(name))
+      {
+        throw new Exception("Missing '(' after function's call.");
+      }
+      return varGlobal[name.lexeme].Last();
     }
-
-    if (enclosing != null)
+    catch (KeyNotFoundException)
     {
-      return enclosing.Get(name);
+      throw new Exception($"Variable {name} not be declared.");
     }
-
-    throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
   }
 
-  public object GetAt(int distance, string name)
+  public void Set(Token name, object value)
   {
-    return Ancestor(distance).values[name];
-  }
-
-  public void Assign(Token name, object value)
-  {
-    if (values.ContainsKey(name.lexeme))
+    if (IsFunction(name))
     {
-      values[name.lexeme] = value;
-      return;
+      throw new Exception("A function name can't be used as name of a variable.");
     }
 
-    if (enclosing != null)
+    if (!varGlobal.ContainsKey(name.lexeme))
     {
-      enclosing.Assign(name, value);
-      return;
+      varGlobal.Add(name.lexeme, new List<object>());
     }
 
-    throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
+    varGlobal[name.lexeme].Add(value);
   }
 
-  public void AssignAt(int distance, Token name, object value)
+  public void Remove(Token name)
   {
-    Ancestor(distance).values[name.lexeme] = value;
-  }
-
-  public Env Ancestor(int distance)
-  {
-    Env env = this;
-    for (int i = 0; i < distance; i++)
+    varGlobal[name.lexeme].RemoveAt(varGlobal[name.lexeme].Count - 1);
+    if (varGlobal[name.lexeme].Count == 0)
     {
-      env = env.enclosing;
+      varGlobal.Remove(name.lexeme);
     }
-    return env;
   }
 
-  public override string? ToString()
+  public void FunDeclare(Expr.Function fun)
   {
-    string result = values.ToString();
-    if (enclosing != null)
+    string name = fun.name.lexeme;
+    int arity = fun.Arity;
+
+    if (IsBuiltin(name, arity))
     {
-      result = result + " -> " + enclosing.ToString();
+      throw new Exception($"{name} is a built-in function.");
     }
-    return result;
+
+    if (funGlobal.ContainsKey(name))
+    {
+      Dictionary<int, Expr.Function> table = funGlobal[name];
+      if (table.ContainsKey(arity))
+      {
+        throw new Exception("Function already exists.");
+      }
+      else
+      {
+        funGlobal[name].Add(arity, fun);
+      }
+    }
+    else
+    {
+      Dictionary<int, Expr.Function> table = new Dictionary<int, Expr.Function>();
+      table.Add(arity, fun);
+      funGlobal.Add(name, table);
+    }
+  }
+
+  private bool IsOverwritable(Expr.Function fun)
+  {
+    return fun.overwritable;
+  }
+
+  public bool IsFunction(Token name)
+  {
+    if (funGlobal.ContainsKey(name.lexeme))
+    {
+      return true;
+    }
+    return false;
+  }
+
+  public bool IsFunction(Token name, int arity)
+  {
+    if (IsFunction(name))
+    {
+      return funGlobal[name.lexeme].ContainsKey(arity);
+    }
+    return false;
+  }
+
+  public List<Token> GetParameters(string name, int arity)
+  {
+    return funGlobal[name][arity].parameters;
+  }
+
+  public Expr GetBody(string name, int arity)
+  {
+    return funGlobal[name][arity].body;
+  }
+
+  public List<int> GetAritys(string fun)
+  {
+    return funGlobal[fun].Keys.ToList();
+  }
+
+  public bool IsBuiltin(string name, int arity)
+  {
+    return builtins.Contains((name, arity));
   }
 
 }

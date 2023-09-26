@@ -32,18 +32,18 @@ public class Hulk
     var scanner = new Scanner(logger, source);
     var tokens = scanner.ScanTokens();
 
-    foreach (var x in tokens)
-    {
-      Console.WriteLine(x);
-    }
+    // foreach (var x in tokens)
+    // {
+    //   Console.WriteLine(x);
+    // }
 
     var parser = new Parser(logger, tokens);
-    var tree = parser.Parse();
+    var interpreter = new Interpreter();
 
+    var result = interpreter.Interpret(parser.Parse());
+  
     if (logger.hadError) return Task.CompletedTask;
 
-    var astPrinter = new AST();
-    Console.WriteLine(astPrinter.Print(tree));
     return Task.CompletedTask;
   }
 }
