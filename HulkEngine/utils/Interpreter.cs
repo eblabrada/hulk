@@ -25,7 +25,9 @@ public class Interpreter : Expr.IVisitor<object>
 
   private object Evaluate(Expr expr)
   {
-    return expr.Accept(this);
+    if (!logger.hadError)
+      return expr.Accept(this);
+    return null;
   }
 
   public object VisitLiteralExpr(Expr.Literal expr)
@@ -82,7 +84,7 @@ public class Interpreter : Expr.IVisitor<object>
       case POWER:
         CheckNumber(left, -1);
         CheckNumber(right, +1);
-        return (double)Math.Pow((double)left, (double)right);
+        return Math.Pow((double)left, (double)right);
       case LESS:
         CheckNumber(left, -1);
         CheckNumber(right, +1);

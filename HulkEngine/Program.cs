@@ -44,11 +44,6 @@ public class Hulk
 
     if (logger.hadError) return Task.CompletedTask;
 
-    if (tokens.Any() && tokens[0].type != FUNCTION && tokens[0].lexeme != "print")
-    {
-      Console.WriteLine(interpretResult);
-    }
-
     return Task.CompletedTask;
   }
 }
