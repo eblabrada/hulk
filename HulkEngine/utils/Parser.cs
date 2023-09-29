@@ -178,7 +178,7 @@ public class Parser
 
   private Expr Multiplication()
   {
-    return AssociativeBinOp(Power, DIV, MUL);
+    return AssociativeBinOp(Power, DIV, MOD, MUL);
   }
 
   private Expr Power()

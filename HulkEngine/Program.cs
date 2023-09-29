@@ -3,7 +3,7 @@
 public class Hulk
 {
   private readonly ConsoleLogger logger = new ConsoleLogger();
-
+  private static Interpreter interpreter = new Interpreter();
   public Hulk() { }
 
   public static Task Main(string[] args)
@@ -32,17 +32,20 @@ public class Hulk
     var scanner = new Scanner(logger, source);
     var tokens = scanner.ScanTokens();
 
-    // foreach (var x in tokens)
-    // {
-    //   Console.WriteLine(x);
-    // }
+    foreach (var x in tokens)
+    {
+      Console.WriteLine(x);
+    }
 
     var parser = new Parser(logger, tokens);
-    var interpreter = new Interpreter();
+   
+    if (logger.hadError) return Task.CompletedTask;
 
     var result = interpreter.Interpret(parser.Parse());
-  
-    if (logger.hadError) return Task.CompletedTask;
+
+    if (tokens.Any() && tokens[0].lexeme != "print") {
+      Console.WriteLine(result);
+    }
 
     return Task.CompletedTask;
   }
