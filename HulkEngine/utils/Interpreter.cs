@@ -3,8 +3,12 @@ using static TokenType;
 public class Interpreter : Expr.IVisitor<object>
 {
   private Env environment = new Env();
+  private readonly ILogger logger;
 
-  public Interpreter() { }
+  public Interpreter(ILogger logger)
+  {
+    this.logger = logger;
+  }
 
   public string Interpret(Expr expr)
   {
@@ -14,7 +18,8 @@ public class Interpreter : Expr.IVisitor<object>
     }
     catch
     {
-      throw new Exception("Interpreter error.");
+      logger.Error(1, "Expression can't be interpreted.");
+      return null;
     }
   }
 
@@ -125,7 +130,9 @@ public class Interpreter : Expr.IVisitor<object>
         return Evaluate(expr.elseBranch);
       }
     }
-    throw new Exception("Condition must be boolean expression.");
+
+    logger.Error(0, "Condition must be a boolean expression.");
+    return null;
   }
 
   public object VisitLetInExpr(Expr.LetIn expr)
@@ -155,7 +162,8 @@ public class Interpreter : Expr.IVisitor<object>
         environment.Remove(name);
       }
 
-      throw new Exception("Error in let-in.");
+      logger.Error(0, "Error in 'let-in' expression.");
+      return null;
     }
   }
 
@@ -210,12 +218,12 @@ public class Interpreter : Expr.IVisitor<object>
 
     if (!environment.IsFunction(expr.name))
     {
-      throw new Exception("Error, expected function.");
+      logger.Error(0, "Expection function.");
     }
 
     if (!environment.IsFunction(expr.name, expr.Arity))
     {
-      throw new Exception("incorrect arity for this function.");
+      logger.Error(0, "Incorrect arity for this function.");
     }
 
     var assignments = new List<Expr.Assign>();
@@ -252,7 +260,7 @@ public class Interpreter : Expr.IVisitor<object>
   {
     if (!(value is double))
     {
-      throw new Exception("Must be number.");
+      logger.Error(0, "Must be number.");
     }
   }
 
@@ -260,7 +268,7 @@ public class Interpreter : Expr.IVisitor<object>
   {
     if (!(value is bool))
     {
-      throw new Exception("Must be boolean.");
+      logger.Error(0, "Must be boolean.");
     }
   }
 
@@ -268,13 +276,7 @@ public class Interpreter : Expr.IVisitor<object>
   {
     if (!(value is string))
     {
-      throw new Exception("Must be string.");
+      logger.Error(0, "Must be string.");
     }
-  }
-
-  private string GetType(object value)
-  {
-    if (value is double) return "Number";
-    return value.GetType().Name;
   }
 }

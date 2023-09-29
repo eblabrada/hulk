@@ -25,21 +25,25 @@ public class Parser
 
       if (Match(SEMICOLON))
       {
-        if (!IsAtEnd()) Error(Peek(), "Expected ';' at end of line...");
+        if (!IsAtEnd())
+        {
+          logger.Error(Peek(), "Expected end of line after ';'.");
+          return null;
+        }
         return result;
       }
 
-      Error(Peek(), "Invalid expression.");
+      logger.Error(Peek(), "Expected ';' at end of line but not found.");
       return null;
     }
     catch
     {
-      Error(Peek(), "Unreachable code.");
+      logger.Error(Peek(), "Unreachable code.");
       return null;
     }
   }
 
-  private Expr HulkExpr()
+  private Expr HulkExpr(int MaxParameters = 10)
   {
     if (Match(FUNCTION))
     {
@@ -51,9 +55,10 @@ public class Parser
       {
         do
         {
-          if (parameters.Count >= 10)
+          if (parameters.Count > MaxParameters)
           {
-            Error(Peek(), "Cannot have more than 10 parameters.");
+            logger.Error(Peek(), $"Functions can't have more than {MaxParameters} parameters.");
+            return null;
           }
 
           parameters.Add(Eat(IDENTIFIER, "Expected parameter name."));
@@ -94,7 +99,8 @@ public class Parser
     {
       if (!Match(IDENTIFIER))
       {
-        Error(Peek(), "Assignment expected.");
+        logger.Error(Peek(), "Variable name expected but not found.");
+        return null;
       }
 
       Token name = Previous();
@@ -273,7 +279,8 @@ public class Parser
       case TokenType.IDENTIFIER:
         return new Expr.Variable(Advance());
       default:
-        throw Error(Peek(), "Expected expression 'literal'.");
+        logger.Error(Peek(), "Expected expression 'literal' but not found.");
+        return null;
     }
   }
 
@@ -293,7 +300,8 @@ public class Parser
   private Token Eat(TokenType type, string message)
   {
     if (Check(type)) return Advance();
-    throw Error(Peek(), message);
+    logger.Error(Peek(), message);
+    return null;
   }
 
   private bool Check(TokenType type)
@@ -332,11 +340,5 @@ public class Parser
   private Token Previous()
   {
     return tokens[current - 1];
-  }
-
-  private ParserError Error(Token token, string message)
-  {
-    logger.Error(token, message);
-    return new ParserError();
   }
 }

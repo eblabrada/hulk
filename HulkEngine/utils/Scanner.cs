@@ -36,7 +36,7 @@ public class Scanner
       start = current;
       ScanToken();
     }
-    tokens.Add(new Token(EOF, "", null, line));
+    tokens.Add(new Token(EOF, "", null, line, tokens.Count + 1));
     return tokens;
   }
 
@@ -94,7 +94,6 @@ public class Scanner
         AddToken(IsNext('=') ? GREATER_EQUAL : GREATER);
         break;
       case '/':
-        // maybe be comment?
         AddToken(DIV);
         break;
       case ' ':
@@ -240,6 +239,6 @@ public class Scanner
   private void AddToken(TokenType type, object literal)
   {
     string text = source.Substring(start, current - start);
-    tokens.Add(new Token(type, text, literal, line));
+    tokens.Add(new Token(type, text, literal, line, tokens.Count + 1));
   }
 }

@@ -1,9 +1,10 @@
 ﻿using System;
+using static TokenType;
 
 public class Hulk
 {
-  private readonly ConsoleLogger logger = new ConsoleLogger();
-  private static Interpreter interpreter = new Interpreter();
+  private static readonly ConsoleLogger logger = new ConsoleLogger();
+  private static readonly Interpreter interpreter = new Interpreter(logger);
   public Hulk() { }
 
   public static Task Main(string[] args)
@@ -32,19 +33,20 @@ public class Hulk
     var scanner = new Scanner(logger, source);
     var tokens = scanner.ScanTokens();
 
-    foreach (var x in tokens)
-    {
-      Console.WriteLine(x);
-    }
-
-    var parser = new Parser(logger, tokens);
-   
     if (logger.hadError) return Task.CompletedTask;
 
-    var result = interpreter.Interpret(parser.Parse());
+    var parser = new Parser(logger, tokens);
+    var parseResult = parser.Parse();
 
-    if (tokens.Any() && tokens[0].lexeme != "print") {
-      Console.WriteLine(result);
+    if (logger.hadError) return Task.CompletedTask;
+
+    var interpretResult = interpreter.Interpret(parseResult);
+
+    if (logger.hadError) return Task.CompletedTask;
+
+    if (tokens.Any() && tokens[0].type != FUNCTION && tokens[0].lexeme != "print")
+    {
+      Console.WriteLine(interpretResult);
     }
 
     return Task.CompletedTask;
