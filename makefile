@@ -1,3 +1,3 @@
 .PHONY: hulk
-dev:
+hulk:
 	@dotnet run --project HulkEngine
