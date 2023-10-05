@@ -67,6 +67,10 @@ public class Interpreter : Expr.IVisitor<object>
         CheckNumber(right, +1);
         return (double)left - (double)right;
       case CONCAT:
+        if (left is double) 
+          left = left.ToString();
+        if (right is double) 
+          right = right.ToString();
         CheckString(left, -1);
         CheckString(right, +1);
         return String.Concat((string)left, (string)right);
