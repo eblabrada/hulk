@@ -18,7 +18,7 @@
 
 \definecolor{gray97}{gray}{.97}
 \definecolor{gray75}{gray}{.75}
-\definecolor{gray54}{gray}{.45}
+\definecolor{gray45}{gray}{.45}
 \lstset{
   frame=Ltb,
   framerule=0pt,
@@ -28,13 +28,13 @@
   framesep=0pt,
   rulesep=.4pt,
   backgroundcolor=\color{gray97},
-  rulesepcolor=\color{black},
+  rulesepcolor=\color{white},
   %
   showstringspaces=true, columns=fullflexible, basicstyle=\ttfamily,
   stringstyle=\color{orange}, commentstyle=\color{gray45},
-  keywordstyle=\bfseries\color{green!40!black},
+  keywordstyle=\bfseries\color{green!40!white},
   %
-  numbers = left, numbersep=15pt, numberstyle=\tiny, numberfirstline=false,
+  numbers=left, numbersep=15pt, numberstyle=\tiny, numberfirstline=false,
   breaklines=true,
 }
 
@@ -70,8 +70,8 @@
 
 \newpage
 
-\section*{Introduction}
-\addcontentsline{toc}{section}{\bf Introduction}
+\section*{Documentation}
+\addcontentsline{toc}{section}{\bf Documentation}
 
 HULK is a didactic, type-safe, object-oriented and incremental programming language. This is a simplified
 version of HULK where we will be implementing a subset of this programming language. In particular, this
@@ -81,10 +81,24 @@ subset consists only of expressions that can be written on one line.
 \addcontentsline{toc}{subsection}{Expressions}
 
 HULK is a ultimately an expression-based language. Most of the syntactic constructions in HULK are expressions,
-including the body of all functions, loops and other block of code.
+including the body of all functions, loops and other block of code. The body of a program in HULK always end with a single global expression (and, if necessary, a final semicolon\footnote{In this
+version of HULK all expressions end with a single semicolon}) that serves as the entrypoint of the program.
 
-The body of a program in HULK always end with a single global expression (and, if necessary, a final semicolon\footnote{In this
-  version of HULK all expressions end with a single semicolon}) that serves as the entrypoint of the program.
+For example, the following is a valid program in HULK:
+
+\begin{lstlisting}
+42;
+\end{lstlisting}
+
+Obviusly, this program has no side effects. A slightly more complicated program, probably the first
+one that does something, is this:
+
+\begin{lstlisting}
+print(42);
+\end{lstlisting}
+
+In this program, {\tt print} refers to a builtin function that prints the results of any expression in the
+output stream. We will talk about functions in a later section.
 
 \subsubsection*{Arithmetic expressions}
 \addcontentsline{toc}{subsubsection}{Arithmetic expressions}
@@ -93,14 +107,37 @@ HULK defines three types of literal values: {\bf numbers}, {\bf strings} and {\b
 and support all basic arithmetic operations with the usual semantic: {\tt +} (addition), {\tt -} (subtraction), {\tt *} (multiplication),
 {\tt \slash} (floating-point division), {\tt \^{}} (power), and parenthesized sub-expressions.
 
+The following is a valid HULK program that computes and prints the result of a rather useless arithmetic expression:
+
+\begin{lstlisting}
+print(((1 + 2) ^ 3) * 4 / 5);
+\end{lstlisting}
+
+All usual syntactic and procedence rules apply.
+
 \subsubsection*{Strings}
 \addcontentsline{toc}{subsubsection}{Strings}
 
-Strings literals in HULK are defined within enclosed double-quotes ({\tt "}). A double-quote
-can be included literally by escaping it ($\backslash${\tt "}), and other escaped characters
-are $\backslash${\tt n} for line endings and $\backslash${\tt t} for tabs. Also, strings can
-be concatenated with other strings (or the string representation of numbers) using the {\tt @}
-operator.
+Strings literals in HULK are defined within enclosed double-quotes ({\tt "}), such as in:
+
+\begin{lstlisting}
+print("Hello World");
+\end{lstlisting}
+
+A double-quote can be included literally by escaping it ($\backslash${\tt "}):
+
+\begin{lstlisting}
+print("The message is \"Hello World\"");
+\end{lstlisting}
+
+Other escaped characters are $\backslash${\tt n} for line endings and $\backslash${\tt t} for tabs. 
+
+Also, strings can be concatenated with other strings (or the string representation of numbers) using the {\tt @}
+operator:
+
+\begin{lstlisting}
+print("The meaning of life is " @ 42);
+\end{lstlisting}
 
 \subsubsection*{Builtin math functions and constants}
 
@@ -120,7 +157,12 @@ Besides these functions, HULK also provides two globals constants: {\tt PI} and 
 the floating-point value of these mathematical constants.
 
 As expected, functions can be nested in HULK (provided the use of types is consistent, but so far all we
-care about is functions from numbers to numbers, so we can forget about types until later on).
+care about is functions from numbers to numbers, so we can forget about types until later on). Hence,
+the following is a valid HULK program:
+
+\begin{lstlisting}
+print(sin(2 * PI)^2 + cos(3 * PI / log(2, 4)));
+\end{lstlisting}
 
 More formally, function invocation is also an expression in HULK, so everywhere you expected an expression
 you can also put a call to builtin function, and you can freely mix arithmetic expressions and mathematical
@@ -138,15 +180,181 @@ value (and type) of its body.
 \subsubsection*{Inline functions}
 \addcontentsline{toc}{subsubsection}{Inline functions}
 
-The easiest way of define a function is the inline form. An inline function is defined by
-an identifier followed by arguments between parenthesis, then the {\tt =>} symbol, and then a simple expression
-(not an expression body) as body, ending with a final semicolon.
+The easiest way of define a function is the inline form. Here is an example:
+
+\begin{lstlisting}
+function tan(x) => sin(x) / cos(x);
+\end{lstlisting}
+
+An inline function is defined by an identifier followed by arguments between parenthesis, 
+then the {\tt =>} symbol, and then a simple expression (not an expression body) as body, 
+ending with a final semicolon.
 
 In HULK, all functions must be defined before the final global expression. All these functions live in a single
 global namespace, hence is not allowed to repeat function names. Similarly, there are no overloads in HULK (at least in ``basic'' HULK).
 
 Finally, the body of any function can use other functions, regardless of whether they are defined before or after the corresponding function.
+Thus, the following is a valid HULK program:
+
+\begin{lstlisting}
+function cot(x) => 1 / tan(x);
+function tan(x) => sin(x) / cos(x);
+\end{lstlisting}
+
 
 And of course, inline functions (and any other type of functions) can call themselves recursively.
+
+\subsection*{Variables}
+\addcontentsline{toc}{subsection}{Variables}
+
+Variables in HULK are lexically-scoped, which means that their scope is explicitely defined by the syntax. 
+You use the {\tt let} expression to introduce one or more variables in and evaluate an expression in 
+a new scope where does variables are defined.
+
+The simplest form is introducing a single variable and using a single expression as body.
+
+\begin{lstlisting}
+let msg = "Hello World" in print(msg);
+\end{lstlisting}
+
+Here {\tt msg} is a new symbol that is defined only within the expression that goes after {\tt in}.
+
+\subsubsection*{Multiple variables}
+\addcontentsline{toc}{subsubsection}{Multiple variables}
+
+The {\tt let} expression admits defining multiple variables at once like this:
+
+\begin{lstlisting}
+let number = 42, text = "The meaning of life is " in print(text @ number);
+\end{lstlisting}
+
+This is semantically equivalent to the following long form:
+
+\begin{lstlisting}
+let number = 42 in let text = "The meaning of life is " in print(text @ number); 
+\end{lstlisting}
+
+As you can notice, {\tt let} associates to the right, so the previous is also equivalent to:
+
+\begin{lstlisting}
+let number = 42 in (let text = "The meaning of life is " in (print(text @ number)));
+\end{lstlisting}
+
+\subsubsection*{Scoping rules}
+
+Since the binding is performed left-to-right (or equivalently starting from the outer let), and every
+variable is effectively bound in a new scope, you can safely use one variable when defining another:
+
+\begin{lstlisting}
+let a = 6, b = a * 7 in print(b);
+\end{lstlisting}
+
+Which is equivalent to (and thus valid):
+
+\begin{lstlisting}
+let a = 6 in let b = a * 7 in print(b);
+\end{lstlisting}
+
+\subsubsection*{The {\tt let} return value}
+\addcontentsline{toc}{subsubsection}{The {\tt let} return value}
+
+As with almost everything in HULK, {\tt let} is an expression, so it has a return value, which is obviusly the return
+value of its body. This means the following is a valid HULK program:
+
+\begin{lstlisting}
+let a = (let b = 6 in b * 7) in print(a);
+\end{lstlisting}
+
+Or more directly:
+
+\begin{lstlisting}
+print(let b = 6 in b * 7);
+\end{lstlisting}
+
+\subsubsection*{Redefining symbols}
+\addcontentsline{toc}{subsubsection}{Redefining symbols}
+
+In HULK every new scope hides the symbols from the parent scope, which means you can redefine a variable name
+in a inner {\tt let} expression:
+
+And because of the scoping rules, the following is also valid:
+
+\begin{lstlisting}
+let a = 7, a = 7 * 6 in print(a);
+\end{lstlisting}
+
+\subsection*{Conditionals}
+\addcontentsline{toc}{subsection}{Conditionals}
+
+The {\tt if} expression allows evaluating different expressions based on a condition. 
+
+\begin{lstlisting}
+let a = 42 in if (a % 2 == 0) print("Even") else print("Odd");
+\end{lstlisting}
+
+Since {\tt if} is itself an expression, returning the value of the branch that evaluated true,
+the previous program can be rewritten as follows:
+
+\begin{lstlisting}
+let a = 42 in print(if(a % 2 == 0) "Even" else "Odd");
+\end{lstlisting}
+
+Conditions are just expressions of boolean type. The following are the valid boolean expressions:
+
+\begin{itemize}
+  \item Boolean literals: {\tt true} and {\tt false}
+  \item Arithmetic comparison operators: {\tt <}, {\tt >}, {\tt <=}, {\tt >=}, {\tt ==}, {\tt !=}, with their usual semantics.
+  \item Boolean operators: {\tt \&} (and), {\tt |} (or), and {\tt !} (not) with their usual semantics.
+\end{itemize}
+
+\subsection*{Errors}
+\addcontentsline{toc}{subsection}{Errors}
+
+In HULK there are three types of errors that must be detected. If an error is found, the interpreter will print one (or more lines) indicating
+the error in the most informative way possible.
+
+\subsubsection*{Lexical Error}
+\addcontentsline{toc}{subsubsection}{Lexical Error}
+
+These types of errors are produced by the presence of invalid tokens. The lexical errors 
+are printed in the following format:
+
+\begin{lstlisting}
+! LEXICAL ERROR [{line}:{column}] at `{token}': {message}
+\end{lstlisting}
+
+Here is an example:
+
+\begin{lstlisting}
+> let 14a = 5 in print(14a);
+! LEXICAL ERROR [1:7]  at `14a`: Is not a valid token
+! LEXICAL ERROR [1:24]  at `14a`: Is not a valid token
+\end{lstlisting}
+
+\subsubsection*{Syntax Error}
+\addcontentsline{toc}{subsubsection}{Syntax Error}
+
+These types of errors are produced by miswritten expressions such that unbalanced parenthesis
+or incomplete expressions. Generally, the syntax errors are printed in the following format:
+
+\begin{lstlisting}
+! SYNTAX ERROR [{line}:{column}] at `token': {message}
+\end{lstlisting}
+
+Here are some examples:
+
+\begin{lstlisting}
+> let a = 5 in print(a;
+! SYNTAX ERROR [1:21]  at `;`: Missing closing parenthesis after parameters.
+> let a = 5 inn print(a);
+! SYNTAX ERROR [1:13]  at `inn`: Missing `in` at end of `let-in` expression.
+! SYNTAX ERROR [1:19]  at `print`: Missing `;`.
+> let a = in print(a);
+! SYNTAX ERROR [1:10]  at `in`: Expected some expression but not found.
+\end{lstlisting}
+
+\subsubsection*{Semantic Error}
+
+These types of errors are produced due to incorrect use of types and arguments. 
 
 \end{document}

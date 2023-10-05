@@ -143,7 +143,7 @@ En HULK hay 3 tipos de errores que usted debe detectar. En caso de detectarse un
 Errores que se producen por la presencia de tokens inválidos. Por ejemplo:
 
 ```js
-> let 14a = 5 in print(14a); 
+> let 14a = 5 in print(14a);
 ! LEXICAL ERROR: `14a` is not valid token.
 ```
 
