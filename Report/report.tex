@@ -73,9 +73,9 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{\bf Introduction}
 
-HULK is a didactic, type-safe, object-oriented and incremental programming language. This is a simplified 
-version of HULK where we will be implementing a subset of this programming language. In particular, this 
-subset consists only of expressions that can be written on one line. 
+HULK is a didactic, type-safe, object-oriented and incremental programming language. This is a simplified
+version of HULK where we will be implementing a subset of this programming language. In particular, this
+subset consists only of expressions that can be written on one line.
 
 \subsection*{Expressions}
 \addcontentsline{toc}{subsection}{Expressions}
@@ -83,20 +83,23 @@ subset consists only of expressions that can be written on one line.
 HULK is a ultimately an expression-based language. Most of the syntactic constructions in HULK are expressions,
 including the body of all functions, loops and other block of code.
 
-The body of a program in HULK always end with a single global expression (and, if necessary, a final semicolon\footnote{In this 
-version of HULK all expressions end with a single semicolon}) that serves as the entrypoint of the program.
+The body of a program in HULK always end with a single global expression (and, if necessary, a final semicolon\footnote{In this
+  version of HULK all expressions end with a single semicolon}) that serves as the entrypoint of the program.
 
 \subsubsection*{Arithmetic expressions}
 \addcontentsline{toc}{subsubsection}{Arithmetic expressions}
 
 HULK defines three types of literal values: {\bf numbers}, {\bf strings} and {\bf booleans}. Numbers are $32$-bit floating-point
 and support all basic arithmetic operations with the usual semantic: {\tt +} (addition), {\tt -} (subtraction), {\tt *} (multiplication),
-{\tt \slash} (floating-point division), {\tt \^{}} (power), and parenthesized sub-expressions. 
+{\tt \slash} (floating-point division), {\tt \^{}} (power), and parenthesized sub-expressions.
 
 \subsubsection*{Strings}
 \addcontentsline{toc}{subsubsection}{Strings}
 
 Strings literals in HULK are defined within enclosed double-quotes ({\tt "}). A double-quote
-can be included literally by escaping it ($\backslash${\tt "}), and other escaped characters are $\backslash${\tt n} for line endings and $\backslash${\tt t} for tabs.
+can be included literally by escaping it ($\backslash${\tt "}), and other escaped characters
+are $\backslash${\tt n} for line endings and $\backslash${\tt t} for tabs. Also, strings can
+be concatenated with other strings (or the string representation of numbers) using the {\tt @}
+operator.
 
 \end{document}
