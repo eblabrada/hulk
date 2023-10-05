@@ -1,3 +1,3 @@
 .PHONY: hulk
 hulk:
-	@dotnet run --project HulkEngine
+	@dotnet run --project Engine

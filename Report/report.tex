@@ -1,0 +1,102 @@
+\documentclass[a4paper, 12pt]{report}
+\usepackage[left=2.5cm, right=2.5cm, top=3cm, bottom=3cm]{geometry}
+
+\usepackage{xcolor}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{url}
+\usepackage{graphicx}
+
+% use spanish template
+% \usepackage[spanish]{babel}
+
+% add bibliographics quotes
+\usepackage{cite}
+
+% insert source code in latex
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{gray97}{gray}{.97}
+\definecolor{gray75}{gray}{.75}
+\definecolor{gray54}{gray}{.45}
+\lstset{
+  frame=Ltb,
+  framerule=0pt,
+  aboveskip=0.5cm,
+  framextopmargin=3pt,
+  framexleftmargin=0.4cm,
+  framesep=0pt,
+  rulesep=.4pt,
+  backgroundcolor=\color{gray97},
+  rulesepcolor=\color{black},
+  %
+  showstringspaces=true, columns=fullflexible, basicstyle=\ttfamily,
+  stringstyle=\color{orange}, commentstyle=\color{gray45},
+  keywordstyle=\bfseries\color{green!40!black},
+  %
+  numbers = left, numbersep=15pt, numberstyle=\tiny, numberfirstline=false,
+  breaklines=true,
+}
+
+\lstnewenvironment{listing}[1][]
+{\lstset{#1}\pagebreak[0]}{\pagebreak[0]}
+
+\begin{document}
+\title{\bf HULK Interpreter documentation}
+\author{Eduardo Brito Labrada}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+  In computer science, an {\bf interpreter} is a computer program that directly executes
+  intructions written in a programming or scripting language, without requiring them previously
+  to have been compiled into a machine language program. An interpreter generally uses one of the
+  following strategies for program execution:
+
+  \begin{enumerate}
+    \item Parse the source code and perform behavior directly;
+    \item Translate source code into some efficient intermediate representation or object code
+          and inmediately execute that;
+    \item Explicitly execute stored precompiled bytecode made by a compiler and matched with the
+          interpreter Virtual Machine.
+  \end{enumerate}
+
+  In this project we will focus on the first strategies of those to create a interpreter for
+    {\em Havana University Language for Kompilers (HULK)}. First we will define the basic syntax of the
+  language and then we will show how the interpreter works in its entirety.
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{\bf Introduction}
+
+HULK is a didactic, type-safe, object-oriented and incremental programming language. This is a simplified 
+version of HULK where we will be implementing a subset of this programming language. In particular, this 
+subset consists only of expressions that can be written on one line. 
+
+\subsection*{Expressions}
+\addcontentsline{toc}{subsection}{Expressions}
+
+HULK is a ultimately an expression-based language. Most of the syntactic constructions in HULK are expressions,
+including the body of all functions, loops and other block of code.
+
+The body of a program in HULK always end with a single global expression (and, if necessary, a final semicolon\footnote{In this 
+version of HULK all expressions end with a single semicolon}) that serves as the entrypoint of the program.
+
+\subsubsection*{Arithmetic expressions}
+\addcontentsline{toc}{subsubsection}{Arithmetic expressions}
+
+HULK defines three types of literal values: {\bf numbers}, {\bf strings} and {\bf booleans}. Numbers are $32$-bit floating-point
+and support all basic arithmetic operations with the usual semantic: {\tt +} (addition), {\tt -} (subtraction), {\tt *} (multiplication),
+{\tt \slash} (floating-point division), {\tt \^{}} (power), and parenthesized sub-expressions. 
+
+\subsubsection*{Strings}
+\addcontentsline{toc}{subsubsection}{Strings}
+
+Strings literals in HULK are defined within enclosed double-quotes ({\tt "}). A double-quote
+can be included literally by escaping it ($\backslash${\tt "}), and other escaped characters are $\backslash${\tt n} for line endings and $\backslash${\tt t} for tabs.
+
+\end{document}
