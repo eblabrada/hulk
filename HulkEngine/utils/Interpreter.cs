@@ -133,7 +133,7 @@ public class Interpreter : Expr.IVisitor<object>
         return Evaluate(expr.elseBranch);
       }
     }
-    
+
     logger.RuntimeError(new RuntimeError(condition.ToString(), "Condition must be a boolean expression."));
     return null;
   }

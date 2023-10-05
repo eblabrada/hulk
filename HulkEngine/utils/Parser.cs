@@ -228,7 +228,7 @@ public class Parser
     }
     return Call();
   }
-  
+
   private Expr Call()
   {
     if (Check(IDENTIFIER) && CheckNext(LEFT_PARENTESIS))
