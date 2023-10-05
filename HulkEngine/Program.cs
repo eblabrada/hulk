@@ -24,6 +24,7 @@ public class Hulk
       }
       RunAsync(line);
       logger.ResetError();
+      logger.ResetRuntimeError();
     }
     return Task.CompletedTask;
   }
@@ -33,16 +34,19 @@ public class Hulk
     var scanner = new Scanner(logger, source);
     var tokens = scanner.ScanTokens();
 
-    if (logger.hadError) return Task.CompletedTask;
+    if (logger.hadError || logger.hadRuntimeError) 
+      return Task.CompletedTask;
 
     var parser = new Parser(logger, tokens);
     var parseResult = parser.Parse();
 
-    if (logger.hadError) return Task.CompletedTask;
+    if (logger.hadError || logger.hadRuntimeError) 
+      return Task.CompletedTask;
 
     var interpretResult = interpreter.Interpret(parseResult);
 
-    if (logger.hadError) return Task.CompletedTask;
+    if (logger.hadError || logger.hadRuntimeError) 
+      return Task.CompletedTask;
 
     return Task.CompletedTask;
   }

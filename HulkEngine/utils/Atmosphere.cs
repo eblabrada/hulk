@@ -1,4 +1,4 @@
-public class Env
+public class Atmosphere
 {
   private Dictionary<string, List<object>> varGlobal;
   private Dictionary<string, Dictionary<int, Expr.Function>> funGlobal;
@@ -14,7 +14,7 @@ public class Env
     ("log", 2)
   };
 
-  public Env()
+  public Atmosphere()
   {
     this.varGlobal = new Dictionary<string, List<object>>();
     this.funGlobal = new Dictionary<string, Dictionary<int, Expr.Function>>();

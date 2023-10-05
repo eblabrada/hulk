@@ -3,7 +3,7 @@ public interface ILogger
   bool hadError { get; }
   bool hadRuntimeError { get; }
 
-  void Error(int line, string where, string message);
+  void Error(string type, int line, int column, string where, string message);
   void RuntimeError(RuntimeError error);
   void ResetError();
   void ResetRuntimeError();
@@ -11,20 +11,20 @@ public interface ILogger
 
 public static class LoggerFunctions
 {
-  public static void Error(this ILogger logger, int line, string message)
+  public static void Error(this ILogger logger, string type, int line, int column, string message)
   {
-    logger.Error(line, "", message);
+    logger.Error(type, line, column, "", message);
   }
 
-  public static void Error(this ILogger logger, Token token, string message)
+  public static void Error(this ILogger logger, string type, Token token, string message)
   {
     if (token.type == TokenType.EOF)
     {
-      logger.Error(token.line, " at end", message);
+      logger.Error(type, token.line, token.column, " at end", message);
     }
     else
     {
-      logger.Error(token.line, $" at '{token.lexeme}'", message);
+      logger.Error(type, token.line, token.column, $" at `{token.lexeme}`", message);
     }
   }
 }

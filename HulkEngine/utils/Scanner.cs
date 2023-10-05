@@ -36,7 +36,7 @@ public class Scanner
       start = current;
       ScanToken();
     }
-    tokens.Add(new Token(EOF, "", null, line, tokens.Count + 1));
+    tokens.Add(new Token(EOF, "", null, line, current));
     return tokens;
   }
 
@@ -119,7 +119,8 @@ public class Scanner
         else
         {
           // unexpected character
-          logger.Error(this.line, "Unexpected character.");
+          Token invalid = new Token(STRING, c.ToString(), null, line, current);
+          logger.Error("LEXICAL", invalid, "Unexpected character.");
         }
         break;
     }
@@ -147,9 +148,19 @@ public class Scanner
     while (IsDigit(Peek())) Advance();
 
     if (Peek() == '.' && IsDigit(Next()))
-    { // float ScanNumber
+    {
       Advance();
       while (IsDigit(Peek())) Advance();
+    }
+
+    if (IsAlpha(Peek()))
+    {
+      Advance();
+      while (IsAlphaNum(Peek())) Advance();
+      string text = source.Substring(start, current - start);
+      Token invalid = new Token(IDENTIFIER, text, null, line, current);
+      logger.Error("LEXICAL", invalid, "Is not a valid token");
+      return;
     }
 
     AddToken(NUMBER, double.Parse(source.Substring(start, current - start)));
@@ -166,7 +177,9 @@ public class Scanner
     // unterminated string
     if (IsAtEnd())
     {
-      logger.Error(this.line, "Unterminated string.");
+      string text = source.Substring(start, current);
+      Token invalid = new Token(STRING, text, null, line, current);
+      logger.Error("LEXICAL", invalid, "Unterminated string.");
       return;
     }
 
@@ -239,6 +252,6 @@ public class Scanner
   private void AddToken(TokenType type, object literal)
   {
     string text = source.Substring(start, current - start);
-    tokens.Add(new Token(type, text, literal, line, tokens.Count + 1));
+    tokens.Add(new Token(type, text, literal, line, current));
   }
 }

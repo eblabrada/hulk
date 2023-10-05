@@ -1,9 +1,9 @@
 public class RuntimeError : Exception
 {
-  public readonly Token token;
+  public readonly string tokenStr;
 
-  public RuntimeError(Token token, string message) : base(message)
+  public RuntimeError(string tokenStr, string message) : base(message)
   {
-    this.token = token;
+    this.tokenStr = tokenStr;
   }
 }

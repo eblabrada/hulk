@@ -2,7 +2,7 @@ using static TokenType;
 
 public class Interpreter : Expr.IVisitor<object>
 {
-  private Env environment = new Env();
+  private Atmosphere environment = new Atmosphere();
   private readonly ILogger logger;
 
   public Interpreter(ILogger logger)
@@ -18,7 +18,8 @@ public class Interpreter : Expr.IVisitor<object>
     }
     catch
     {
-      logger.Error(1, "Expression can't be interpreted.");
+      if (!logger.hadRuntimeError)
+        logger.RuntimeError(new RuntimeError("", "This line can't be interpreted."));
       return null;
     }
   }
@@ -132,8 +133,8 @@ public class Interpreter : Expr.IVisitor<object>
         return Evaluate(expr.elseBranch);
       }
     }
-
-    logger.Error(0, "Condition must be a boolean expression.");
+    
+    logger.RuntimeError(new RuntimeError(condition.ToString(), "Condition must be a boolean expression."));
     return null;
   }
 
@@ -164,7 +165,7 @@ public class Interpreter : Expr.IVisitor<object>
         environment.Remove(name);
       }
 
-      logger.Error(0, "Error in 'let-in' expression.");
+      logger.RuntimeError(new RuntimeError(expr.into.ToString(), "Unexpected error in `let-in` expression."));
       return null;
     }
   }
@@ -220,12 +221,14 @@ public class Interpreter : Expr.IVisitor<object>
 
     if (!environment.IsFunction(expr.name))
     {
-      logger.Error(0, "Expection function.");
+      logger.RuntimeError(new RuntimeError(expr.name.lexeme, "Expected function."));
+      return null;
     }
 
     if (!environment.IsFunction(expr.name, expr.Arity))
     {
-      logger.Error(0, "Incorrect arity for this function.");
+      logger.RuntimeError(new RuntimeError(expr.name.lexeme, "Incorrect arity for this function."));
+      return null;
     }
 
     var assignments = new List<Expr.Assign>();
@@ -262,7 +265,7 @@ public class Interpreter : Expr.IVisitor<object>
   {
     if (!(value is double))
     {
-      logger.Error(0, "Must be number.");
+      logger.RuntimeError(new RuntimeError(value.ToString(), "Must be number."));
     }
   }
 
@@ -270,7 +273,7 @@ public class Interpreter : Expr.IVisitor<object>
   {
     if (!(value is bool))
     {
-      logger.Error(0, "Must be boolean.");
+      logger.RuntimeError(new RuntimeError(value.ToString(), "Must be boolean."));
     }
   }
 
@@ -278,7 +281,7 @@ public class Interpreter : Expr.IVisitor<object>
   {
     if (!(value is string))
     {
-      logger.Error(0, "Must be string.");
+      logger.RuntimeError(new RuntimeError(value.ToString(), "Must be string."));
     }
   }
 }

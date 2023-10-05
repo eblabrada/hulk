@@ -27,18 +27,18 @@ public class Parser
       {
         if (!IsAtEnd())
         {
-          logger.Error(Peek(), "Expected end of line after ';'.");
+          logger.Error("SYNTAX", Peek(), "Expected end of line after `;`.");
           return null;
         }
         return result;
       }
 
-      logger.Error(Peek(), "Expected ';' at end of line but not found.");
+      logger.Error("SYNTAX", Peek(), "Missing `;`.");
       return null;
     }
     catch
     {
-      logger.Error(Peek(), "Unreachable code.");
+      logger.Error("SYNTAX", Peek(), "Unreachable code.");
       return null;
     }
   }
@@ -47,8 +47,8 @@ public class Parser
   {
     if (Match(FUNCTION))
     {
-      var name = Eat(IDENTIFIER, "Expected function name.");
-      Eat(LEFT_PARENTESIS, "Expected '(' after function name.");
+      var name = Eat(IDENTIFIER, "Missing function name.");
+      Eat(LEFT_PARENTESIS, $"Missing open parenthesis after `{name}`.");
 
       var parameters = new List<Token>();
       if (!Check(RIGHT_PARENTESIS))
@@ -57,16 +57,16 @@ public class Parser
         {
           if (parameters.Count > MaxParameters)
           {
-            logger.Error(Peek(), $"Functions can't have more than {MaxParameters} parameters.");
+            logger.Error("SYNTAX", Peek(), $"Functions can't have more than {MaxParameters} parameters.");
             return null;
           }
 
-          parameters.Add(Eat(IDENTIFIER, "Expected parameter name."));
+          parameters.Add(Eat(IDENTIFIER, "Missing parameter's name after `,`."));
         } while (Match(COMMA));
       }
 
-      Eat(RIGHT_PARENTESIS, "Expected ')' after parameters.");
-      Eat(IMPLIES, "Expected '=>' symbol before body of function.");
+      Eat(RIGHT_PARENTESIS, $"Missing closing parenthesis after `{parameters.Last().lexeme}`.");
+      Eat(IMPLIES, "Missing `=>` before function's body.");
 
       var body = Expression();
 
@@ -82,7 +82,7 @@ public class Parser
     {
       var assignments = Variables();
 
-      Eat(IN, "Expected 'in' at end of 'let-in' statement.");
+      Eat(IN, "Missing `in` at end of `let-in` expression.");
 
       Expr into = Expression();
       return new Expr.LetIn(assignments, into);
@@ -99,12 +99,12 @@ public class Parser
     {
       if (!Match(IDENTIFIER))
       {
-        logger.Error(Peek(), "Variable name expected but not found.");
+        logger.Error("SYNTAX", Peek(), "Invalid token in `let-in` expression.");
         return null;
       }
 
       Token name = Previous();
-      Eat(EQUAL, "Expected '=' after variable name.");
+      Eat(EQUAL, $"Missing `=` after variable `{name.lexeme}`.");
       Expr value = Expression();
       assignments.Add(new Expr.Assign(name, value));
     } while (Match(COMMA));
@@ -116,9 +116,9 @@ public class Parser
   {
     if (Match(IF))
     {
-      Eat(LEFT_PARENTESIS, "Expected '(' after 'if'.");
+      Eat(LEFT_PARENTESIS, "Missing open parenthesis after `if` expression.");
       var condition = Expression();
-      Eat(RIGHT_PARENTESIS, "Expected ')' after if condition.");
+      Eat(RIGHT_PARENTESIS, "Missing closing parenthesis after if's condition.");
 
       var thenBranch = Expression();
       var elseBranch = default(Expr);
@@ -223,20 +223,20 @@ public class Parser
     if (Match(LEFT_PARENTESIS))
     {
       Expr expr = Expression();
-      Eat(RIGHT_PARENTESIS, "Expected ')' after expression.");
+      Eat(RIGHT_PARENTESIS, "Missing closing parenthesis after expression.");
       return expr;
     }
     return Call();
   }
-
+  
   private Expr Call()
   {
     if (Check(IDENTIFIER) && CheckNext(LEFT_PARENTESIS))
     {
       Token name = Advance();
-      Eat(LEFT_PARENTESIS, "Expected '(' after identifier.");
+      Eat(LEFT_PARENTESIS, $"Missing open parenthesis after {name.lexeme}.");
       List<Expr> parameters = Parameters();
-      Eat(RIGHT_PARENTESIS, "Expected ')' after parameters.");
+      Eat(RIGHT_PARENTESIS, $"Missing closing parenthesis after parameters.");
       return new Expr.Call(name, parameters);
     }
     return Literal();
@@ -279,7 +279,7 @@ public class Parser
       case TokenType.IDENTIFIER:
         return new Expr.Variable(Advance());
       default:
-        logger.Error(Peek(), "Expected expression 'literal' but not found.");
+        logger.Error("SYNTAX", Peek(), "Expected some expression but not found.");
         return null;
     }
   }
@@ -300,7 +300,7 @@ public class Parser
   private Token Eat(TokenType type, string message)
   {
     if (Check(type)) return Advance();
-    logger.Error(Peek(), message);
+    logger.Error("SYNTAX", Peek(), message);
     return null;
   }
 

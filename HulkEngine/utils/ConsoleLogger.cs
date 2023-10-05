@@ -1,19 +1,18 @@
-
 public class ConsoleLogger : ILogger
 {
   public bool hadError { get; private set; }
 
   public bool hadRuntimeError { get; private set; }
 
-  public void Error(int line, string where, string message)
+  public void Error(string type, int line, int column, string where, string message)
   {
-    Console.WriteLine("[line " + line + "] Error" + where + ": " + message);
+    Console.WriteLine($"! {type} ERROR [{line}:{column}] {where}: {message}");
     hadError = true;
   }
 
   public void RuntimeError(RuntimeError error)
   {
-    Console.WriteLine(error.Message + "\n[line " + error.token.line + "]");
+    Console.WriteLine($"! SEMANTIC ERROR: `{error.tokenStr}` {error.Message}");
     hadRuntimeError = true;
   }
 
