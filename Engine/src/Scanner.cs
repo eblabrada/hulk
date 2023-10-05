@@ -170,6 +170,9 @@ public class Scanner
   {
     while (Peek() != '"' && !IsAtEnd())
     {
+      if (Peek() == '\\' && Next() == '"') {
+        Advance();
+      }
       if (Peek() == '\n') line++;
       Advance();
     }
