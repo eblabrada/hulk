@@ -225,19 +225,19 @@ Here {\tt msg} is a new symbol that is defined only within the expression that g
 The {\tt let} expression admits defining multiple variables at once like this:
 
 \begin{lstlisting}
-let number = 42, text = "The meaning of life is " in print(text @ number);
+let x = 42, s = "The meaning of life is " in print(s @ x);
 \end{lstlisting}
 
 This is semantically equivalent to the following long form:
 
 \begin{lstlisting}
-let number = 42 in let text = "The meaning of life is " in print(text @ number); 
+let x = 42 in let s = "The meaning of life is " in print(s @ x); 
 \end{lstlisting}
 
 As you can notice, {\tt let} associates to the right, so the previous is also equivalent to:
 
 \begin{lstlisting}
-let number = 42 in (let text = "The meaning of life is " in (print(text @ number)));
+let x = 42 in (let s = "The meaning of life is " in (print(s @ x)));
 \end{lstlisting}
 
 \subsubsection*{Scoping rules}
@@ -354,6 +354,7 @@ Here are some examples:
 \end{lstlisting}
 
 \subsubsection*{Semantic Error}
+\addcontentsline{toc}{subsubsection}{Semantic Error}
 
 These types of errors are produced due to incorrect use of types and arguments. 
 
