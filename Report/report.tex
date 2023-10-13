@@ -417,6 +417,15 @@ In the scanning process, each character is iterated and an attempt is made to id
 this the {\tt ScanToken()} method is used, also {\tt ScanIdentifier()}, {\tt ScanString()}, {\tt ScanNumber()} methods are used
 to make more easy the process.
 
-\subsection*{title}
+\subsection*{\tt Parser.cs}
+
+After the scanning process is completed, we need solve the next problem: given a series of tokens we need to map those tokens
+to terminals in the grammar figure out which rules could have generated that string.
+
+As we parse, we aren't just determining if the string is valid Hulk code, we're also tracking which rules match which parts of 
+it so that we know what part of the language each token belongs to.
+
+The are some known techniques to parsing expressions, in this project I will use the Recursive Descent Parsing. In the Parser class
+each grammar rule become a method inside it.
 
 \end{document}
