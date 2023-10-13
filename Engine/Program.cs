@@ -18,7 +18,7 @@ public class Hulk
     {
       Console.Write("> ");
       string line = Console.ReadLine();
-      if (line == null || line == "exit")
+      if (line == null)
       {
         break;
       }
@@ -40,8 +40,8 @@ public class Hulk
     var parser = new Parser(logger, tokens);
     var parseResult = parser.Parse();
 
-    var ast = new AST();
-    Console.WriteLine(ast.Print(parseResult));
+    // var ast = new AST();
+    // Console.WriteLine(ast.Print(parseResult));
 
     if (logger.hadError || logger.hadRuntimeError) 
       return Task.CompletedTask;

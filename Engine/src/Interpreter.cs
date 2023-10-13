@@ -2,12 +2,13 @@ using static TokenType;
 
 public class Interpreter : Expr.IVisitor<object>
 {
-  private Atmosphere environment = new Atmosphere();
+  private Atmosphere environment;
   private readonly ILogger logger;
 
   public Interpreter(ILogger logger)
   {
     this.logger = logger;
+    this.environment = new Atmosphere(logger);
   }
 
   public string Interpret(Expr expr)
@@ -169,7 +170,7 @@ public class Interpreter : Expr.IVisitor<object>
         environment.Remove(name);
       }
 
-      logger.RuntimeError(new RuntimeError(expr.into.ToString(), "Unexpected error in `let-in` expression."));
+      logger.RuntimeError(new RuntimeError(new AST().VisitLetInExpr(expr), "Unexpected error in `let-in` expression."));
       return null;
     }
   }

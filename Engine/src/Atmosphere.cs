@@ -2,7 +2,7 @@ public class Atmosphere
 {
   private Dictionary<string, List<object>> varGlobal;
   private Dictionary<string, Dictionary<int, Expr.Function>> funGlobal;
-
+  private readonly ILogger logger;
   private HashSet<(string, int)> builtins = new HashSet<(string, int)>()
   {
     ("rand", 0),
@@ -14,34 +14,38 @@ public class Atmosphere
     ("log", 2)
   };
 
-  public Atmosphere()
+  public Atmosphere(ILogger logger)
   {
     this.varGlobal = new Dictionary<string, List<object>>();
     this.funGlobal = new Dictionary<string, Dictionary<int, Expr.Function>>();
+    this.logger = logger;
   }
 
   public object Get(Token name)
   {
     try
     {
-      if (IsFunction(name))
-      {
-        throw new Exception("Missing '(' after function's call.");
-      }
+      // if (IsFunction(name))
+      // {
+      //   logger.RuntimeError(new RuntimeError(name.lexeme, "Missing `(` after function's call."));
+      //   return null;
+      // }
       return varGlobal[name.lexeme].Last();
     }
     catch (KeyNotFoundException)
     {
-      throw new Exception($"Variable {name} not be declared.");
+      logger.RuntimeError(new RuntimeError(name.lexeme, $"Missing `{name}` not be declared."));
+      return null;
     }
   }
 
   public void Set(Token name, object value)
   {
-    if (IsFunction(name))
-    {
-      throw new Exception("A function name can't be used as name of a variable.");
-    }
+    // if (IsFunction(name))
+    // {
+    //   logger.RuntimeError(new RuntimeError(name.lexeme, "a function name can't be used as name of a variable."));
+    //   return;
+    // }
 
     if (!varGlobal.ContainsKey(name.lexeme))
     {
@@ -67,7 +71,8 @@ public class Atmosphere
 
     if (IsBuiltin(name, arity))
     {
-      throw new Exception($"{name} is a built-in function.");
+      logger.RuntimeError(new RuntimeError(name, "is a built-in function."));
+      return;
     }
 
     if (funGlobal.ContainsKey(name))
@@ -75,7 +80,8 @@ public class Atmosphere
       Dictionary<int, Expr.Function> table = funGlobal[name];
       if (table.ContainsKey(arity))
       {
-        throw new Exception("Function already exists.");
+        logger.RuntimeError(new RuntimeError(name, "already exists."));
+        return;
       }
       else
       {
@@ -84,15 +90,12 @@ public class Atmosphere
     }
     else
     {
-      Dictionary<int, Expr.Function> table = new Dictionary<int, Expr.Function>();
-      table.Add(arity, fun);
+      Dictionary<int, Expr.Function> table = new Dictionary<int, Expr.Function>
+      {
+          { arity, fun }
+      };
       funGlobal.Add(name, table);
     }
-  }
-
-  private bool IsOverwritable(Expr.Function fun)
-  {
-    return fun.overwritable;
   }
 
   public bool IsFunction(Token name)
