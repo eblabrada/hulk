@@ -72,6 +72,9 @@ public class Scanner
       case '@':
         AddToken(CONCAT);
         break;
+      case '/':
+        AddToken(DIV);
+        break;
       case '%':
         AddToken(MOD);
         break;
@@ -82,19 +85,16 @@ public class Scanner
         AddToken(OR);
         break;
       case '!':
-        AddToken(IsNext('=') ? NOT_EQUAL : NOT);
+        AddToken(Eat('=') ? NOT_EQUAL : NOT);
         break;
       case '=':
-        AddToken(IsNext('=') ? EQUAL_EQUAL : IsNext('>') ? IMPLIES : EQUAL);
+        AddToken(Eat('=') ? EQUAL_EQUAL : Eat('>') ? IMPLIES : EQUAL);
         break;
       case '<':
-        AddToken(IsNext('=') ? LESS_EQUAL : LESS);
+        AddToken(Eat('=') ? LESS_EQUAL : LESS);
         break;
       case '>':
-        AddToken(IsNext('=') ? GREATER_EQUAL : GREATER);
-        break;
-      case '/':
-        AddToken(DIV);
+        AddToken(Eat('=') ? GREATER_EQUAL : GREATER);
         break;
       case ' ':
       case '\r':
@@ -176,7 +176,7 @@ public class Scanner
       if (Peek() == '\n') line++;
       Advance();
     }
-
+    
     // unterminated string
     if (IsAtEnd())
     {
@@ -197,12 +197,12 @@ public class Scanner
     AddToken(STRING, value);
   }
 
-  private bool IsNext(char expected)
+  private bool Eat(char expected)
   {
     if (IsAtEnd()) return false;
     if (source[current] == expected)
     {
-      current++;
+      Advance();
       return true;
     }
     return false;

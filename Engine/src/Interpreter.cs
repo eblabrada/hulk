@@ -231,7 +231,7 @@ public class Interpreter : Expr.IVisitor<object>
 
     if (!environment.IsFunction(expr.name, expr.Arity))
     {
-      logger.RuntimeError(new RuntimeError(expr.name.lexeme, "Incorrect arity for this function."));
+      logger.RuntimeError(new RuntimeError(expr.name.lexeme, "incorrect arity for this function."));
       return null;
     }
 

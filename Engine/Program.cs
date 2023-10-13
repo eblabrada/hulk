@@ -33,7 +33,7 @@ public class Hulk
   {
     var scanner = new Scanner(logger, source);
     var tokens = scanner.ScanTokens();
-
+    
     if (logger.hadError || logger.hadRuntimeError) 
       return Task.CompletedTask;
 

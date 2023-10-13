@@ -356,6 +356,67 @@ Here are some examples:
 \subsubsection*{Semantic Error}
 \addcontentsline{toc}{subsubsection}{Semantic Error}
 
-These types of errors are produced due to incorrect use of types and arguments. 
+These types of errors are produced due to incorrect use of types and arguments. Generally, the
+semantic errors are printed in the following format:
+
+\begin{lstlisting}
+> let a = "hello world" in print(a + 5);
+! SEMANTIC ERROR: `hello world` Must be number.
+! SEMANTIC ERROR: `Expr+Call` Unexpected error in `let-in` expression.
+> print(fib("hello world"));
+! SEMANTIC ERROR: `hello world` Must be number.
+! SEMANTIC ERROR: `Expr+Conditional` Unexpected error in `let-in` expression.
+> print(fib(4, 3))
+! SEMANTIC ERROR: `fib` Incorrect arity for this function.
+\end{lstlisting}
+
+\section*{Implementation}
+\addcontentsline{toc}{section}{\bf Implementation}
+
+In this section each of the phases of the interpreter is explained: scanning, parsing, and evaluating code.
+
+\subsection*{Scanning}
+\addcontentsline{toc}{subsection}{Scanning}
+
+The first step in the interpreter is scanning. The scanner takes in raw source code as a series of characters
+and groups it into a series of {\bf tokens}. These are the meaningful ``words'' and ``puntuaction'' that make 
+up the language's grammar.
+
+First of all we need identify all the tokens' types that are used in the language's grammar. Some of this types are:
+
+\begin{itemize}
+  \item {\bf Operators:} {\tt MUL}, {\tt CONCAT}, {\tt MINUS}, {\tt PLUS}, {\tt POWER}, {\tt DIV}, {\tt MOD}.
+  \item {\bf Single-character:} {\tt LEFT\_PARENTESIS}, {\tt RIGHT\_PARENTESIS}, {\tt COMMA}, {\tt SEMICOLON}.
+  \item {\bf Comparison:} {\tt NOT}, {\tt NOT\_EQUAL}, {\tt EQUAL}, {\tt EQUAL\_EQUAL}, {\tt GREATER}, {\tt GREATER\_EQUAL}, {\tt LESS}, 
+    {\tt LESS\_EQUAL}.
+  \item {\bf Literals:} {\tt BOOLEAN}, {\tt STRING}, {\tt NUMBER}, {\tt IDENTIFIER}.
+  \item {\bf Keywords:} {\tt AND}, {\tt ELSE}, {\tt FALSE}, {\tt FUNCTION}, {\tt IF}, {\tt LET}, {\tt IN}, {\tt OR}, {\tt TRUE}.
+  \item {\bf Constants:} {\tt EULER}, {\tt PI}.
+  \item {\bf Others:} {\tt IMPLIES}, {\tt EOF}. 
+\end{itemize}
+
+Then we iterate the entire line and match each word with its respective token, if the word can be matched with any valid token, we report this as an {\em lexical error}. 
+
+\subsubsection*{\tt Scanner.cs}
+
+In this class is implemented the scanning process. We use some auxiliary function:
+
+\begin{itemize}
+  \item {\tt Peek()}: returns the current character in the scanning process.
+  \item {\tt Next()}: returns the next character in the scanning process.
+  \item {\tt Advance()}: returns the current character in the scanning process and advance to the next character.
+  \item {\tt IsAtEnd()}: returns true is the scanning process is at end of the source code.
+  \item {\tt Eat(expected)}: returns true and advance if the current character match with {\tt expected}.  
+  \item {\tt IsAlpha(c)}: returns true if {\tt c} is an alphabet character or is equal to {\tt \_}.
+  \item {\tt IsDigit(c)}: returns true if {\tt c} is a digit.
+  \item {\tt IsAlphaNum(c)}: returns true {\tt IsAlpha(c)} or {\tt IsDigit(c)} are true.
+  \item {\tt AddToken(type, literal)}: add token of type {\tt type} and literal {\tt literal} to the list of tokens.
+\end{itemize}
+
+In the scanning process, each character is iterated and an attempt is made to identify the type of token to which it belongs, for
+this the {\tt ScanToken()} method is used, also {\tt ScanIdentifier()}, {\tt ScanString()}, {\tt ScanNumber()} methods are used
+to make more easy the process.
+
+\subsection*{title}
 
 \end{document}

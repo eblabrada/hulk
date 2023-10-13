@@ -123,11 +123,10 @@ public class Parser
       var thenBranch = Expression();
       var elseBranch = default(Expr);
 
-      if (Match(ELSE))
-      {
-        elseBranch = Expression();
-      }
-
+      Eat(ELSE, "Expected else after expression."); 
+      
+      elseBranch = Expression();
+    
       return new Expr.Conditional(condition, thenBranch, elseBranch);
     }
 
@@ -273,10 +272,10 @@ public class Parser
       case PI:
         Advance();
         return new Expr.Literal(Math.PI);
-      case TokenType.EULER:
+      case EULER:
         Advance();
         return new Expr.Literal(Math.E);
-      case TokenType.IDENTIFIER:
+      case IDENTIFIER:
         return new Expr.Variable(Advance());
       default:
         logger.Error("SYNTAX", Peek(), "Expected some expression but not found.");
