@@ -27,6 +27,7 @@ public class AST : Expr.IVisitor<string>
 
   public string VisitLiteralExpr(Expr.Literal expr)
   {
+    if (expr.value == null) return "nil";
     return expr.value.ToString();
   }
 
@@ -42,10 +43,12 @@ public class AST : Expr.IVisitor<string>
 
   public string VisitLetInExpr(Expr.LetIn expr)
   {
-    string result = "let-in {";
+    string result = "let-in {"; bool comma = false;
     foreach (var assignment in expr.assignments)
     {
-      result += assignment;
+      if (comma) result += ", ";
+      result += $"= ({assignment.name.lexeme} {Print(assignment.value)})";
+      comma = true;
     }
     result += "}";
     result += "(" + Print(expr.into) + ")";
@@ -59,6 +62,48 @@ public class AST : Expr.IVisitor<string>
 
   public string VisitCallExpr(Expr.Call expr)
   {
-    return expr.name.lexeme;
+    return Parenthesize("call", expr.name, expr.parameters);
+  }
+
+  private string Parenthesize(string name, params object[] parts)
+  {
+    var result = new StringBuilder();
+    result.Append("(").Append(name);
+
+    foreach (var part in parts)
+    {
+      result.Append(" ");
+
+      switch (part)
+      {
+        case Expr expr:
+          result.Append(expr.Accept(this));
+          break;
+        case Token token:
+          result.Append(token.lexeme);
+          break;
+        case IEnumerable<Expr> expressions:
+          if (expressions.Any())
+          {
+            result.Append("[");
+            foreach (var expr in expressions)
+            {
+              if (expr != expressions.First())
+              {
+                result.Append(", ");
+              }
+              result.Append(expr.Accept(this));
+            }
+            result.Append("]");
+          }
+          break;
+        default:
+          result.Append(part.ToString());
+          break;
+      }
+    }
+
+    result.Append(")");
+    return result.ToString();
   }
 }

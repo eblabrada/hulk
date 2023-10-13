@@ -33,12 +33,15 @@ public class Hulk
   {
     var scanner = new Scanner(logger, source);
     var tokens = scanner.ScanTokens();
-    
+
     if (logger.hadError || logger.hadRuntimeError) 
       return Task.CompletedTask;
 
     var parser = new Parser(logger, tokens);
     var parseResult = parser.Parse();
+
+    var ast = new AST();
+    Console.WriteLine(ast.Print(parseResult));
 
     if (logger.hadError || logger.hadRuntimeError) 
       return Task.CompletedTask;

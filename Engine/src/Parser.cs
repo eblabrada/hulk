@@ -49,7 +49,7 @@ public class Parser
     {
       var name = Eat(IDENTIFIER, "Missing function name.");
       Eat(LEFT_PARENTESIS, $"Missing open parenthesis after `{name}`.");
-
+  
       var parameters = new List<Token>();
       if (!Check(RIGHT_PARENTESIS))
       {
@@ -64,12 +64,15 @@ public class Parser
           parameters.Add(Eat(IDENTIFIER, "Missing parameter's name after `,`."));
         } while (Match(COMMA));
       }
-
-      Eat(RIGHT_PARENTESIS, $"Missing closing parenthesis after `{parameters.Last().lexeme}`.");
+      
+      if (parameters.Count > 0)
+        Eat(RIGHT_PARENTESIS, $"Missing closing parenthesis after `{parameters.Last().lexeme}`.");
+      else
+        Eat(RIGHT_PARENTESIS, "Missing closing parenthesis after `(`.");
+      
       Eat(IMPLIES, "Missing `=>` before function's body.");
-
+      
       var body = Expression();
-
       return new Expr.Function(name, parameters, body);
     }
 
