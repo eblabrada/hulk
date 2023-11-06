@@ -27,8 +27,11 @@ public class Interpreter : Expr.IVisitor<object>
 
   private object Evaluate(Expr expr)
   {
-    if (!logger.hadError)
+    if (!logger.hadError) {
+      if (expr is null)
+        return null;
       return expr.Accept(this);
+    }
     return null;
   }
 
@@ -129,13 +132,15 @@ public class Interpreter : Expr.IVisitor<object>
     object condition = Evaluate(expr.condition);
     if (condition is bool)
     {
+      var ifTrue = Evaluate(expr.thenBranch);
+      var ifFalse = Evaluate(expr.elseBranch);
       if (IsTrue(condition))
       {
-        return Evaluate(expr.thenBranch);
+        return ifTrue;
       }
       else
       {
-        return Evaluate(expr.elseBranch);
+        return ifFalse;
       }
     }
 
@@ -150,6 +155,7 @@ public class Interpreter : Expr.IVisitor<object>
     {
       foreach (var assignment in expr.assignments)
       {
+        var cosa = Evaluate(assignment.value);
         environment.Set(assignment.name, Evaluate(assignment.value));
         values.Add(assignment.name);
       }
@@ -188,6 +194,14 @@ public class Interpreter : Expr.IVisitor<object>
   public object VisitFunctionExpr(Expr.Function expr)
   {
     environment.FunDeclare(expr);
+    
+    List<Expr> parameters = new List<Expr>();
+    for (int i = 0; i < expr.Arity; i++) {
+      parameters.Add(null);
+    }
+
+    VisitCallExpr(new Expr.Call(expr.name, parameters));
+
     return null;
   }
 
@@ -235,7 +249,7 @@ public class Interpreter : Expr.IVisitor<object>
       logger.RuntimeError(new RuntimeError(expr.name.lexeme, "incorrect arity for this function."));
       return null;
     }
-
+    
     var assignments = new List<Expr.Assign>();
     var args = environment.GetParameters(expr.name.lexeme, expr.Arity);
     var _params = expr.parameters;
@@ -268,22 +282,27 @@ public class Interpreter : Expr.IVisitor<object>
 
   private void CheckNumber(object value, int side = 0)
   {
+    if (value is null) return;
     if (!(value is double))
     {
-      logger.RuntimeError(new RuntimeError(value.ToString(), "Must be number."));
+      string nameValue = (value is string) ? $"\"{value}\"" : value.ToString();
+      logger.RuntimeError(new RuntimeError(nameValue, "Must be number."));
     }
   }
 
   private void CheckBoolean(object value, int side = 0)
   {
+    if (value is null) return;
     if (!(value is bool))
     {
-      logger.RuntimeError(new RuntimeError(value.ToString(), "Must be boolean."));
+      string nameValue = (value is string) ? $"\"{value}\"" : value.ToString();
+      logger.RuntimeError(new RuntimeError(nameValue, "Must be boolean."));
     }
   }
 
   private void CheckString(object value, int side = 0)
   {
+    if (value is null) return;
     if (!(value is string))
     {
       logger.RuntimeError(new RuntimeError(value.ToString(), "Must be string."));
