@@ -194,14 +194,6 @@ public class Interpreter : Expr.IVisitor<object>
   public object VisitFunctionExpr(Expr.Function expr)
   {
     environment.FunDeclare(expr);
-    
-    List<Expr> parameters = new List<Expr>();
-    for (int i = 0; i < expr.Arity; i++) {
-      parameters.Add(null);
-    }
-
-    VisitCallExpr(new Expr.Call(expr.name, parameters));
-
     return null;
   }
 
