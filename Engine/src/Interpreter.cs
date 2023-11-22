@@ -132,15 +132,13 @@ public class Interpreter : Expr.IVisitor<object>
     object condition = Evaluate(expr.condition);
     if (condition is bool)
     {
-      var ifTrue = Evaluate(expr.thenBranch);
-      var ifFalse = Evaluate(expr.elseBranch);
       if (IsTrue(condition))
       {
-        return ifTrue;
+        return Evaluate(expr.thenBranch);;
       }
       else
       {
-        return ifFalse;
+        return Evaluate(expr.elseBranch);;
       }
     }
 
